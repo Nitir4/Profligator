@@ -2134,3 +2134,369 @@ a:focus-visible {
     font-size: 10px;
   }
 }
+
+.sharing-page {
+  display: flex;
+  min-height: 618.25px;
+  flex-direction: column;
+  background: linear-gradient(rgba(248, 250, 252, 0.7), rgba(248, 250, 252, 0.7)),
+    #ffffff;
+}
+
+.sharing-main {
+  display: flex;
+  width: 100%;
+  height: 496.25px;
+  flex: 0 0 496.25px;
+  justify-content: center;
+  padding: 40px 24px;
+}
+
+.sharing-content {
+  display: flex;
+  width: 672px;
+  height: 416.75px;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sharing-intro {
+  position: relative;
+  width: 100%;
+  height: 82.75px;
+  flex: 0 0 82.75px;
+}
+
+.sharing-breadcrumb {
+  display: flex;
+  height: 16px;
+  align-items: center;
+  gap: 8px;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.sharing-breadcrumb a {
+  color: var(--muted);
+}
+
+.sharing-breadcrumb > span:nth-child(2) {
+  color: #cbd5e1;
+}
+
+.sharing-intro h1 {
+  margin: 6px 0 0;
+  color: var(--ink);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.6px;
+  line-height: 32px;
+}
+
+.sharing-intro > p {
+  margin: 5px 0 0;
+  color: #475569;
+  font-size: 14px;
+  line-height: 22.75px;
+}
+
+.sharing-card {
+  width: 100%;
+  height: 310px;
+  overflow: hidden;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.sharing-toggle-row {
+  display: flex;
+  width: 100%;
+  height: 92px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+}
+
+.sharing-toggle-row > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-right: 8px;
+}
+
+.sharing-toggle-row h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.sharing-toggle-row p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 19.5px;
+}
+
+.sharing-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  flex: 0 0 44px;
+  margin-bottom: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: 9999px;
+  background: #cbd5e1;
+  cursor: pointer;
+  transition: background-color 140ms ease;
+}
+
+.sharing-switch span {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  transition: transform 140ms ease;
+}
+
+.sharing-switch.enabled {
+  background: var(--brand);
+}
+
+.sharing-switch.enabled span {
+  transform: translateX(20px);
+}
+
+.share-link-section {
+  display: flex;
+  width: 100%;
+  height: 216px;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  border-top: 1px solid #f1f5f9;
+  background: rgba(248, 250, 252, 0.5);
+}
+
+.share-link-fields {
+  display: flex;
+  width: 100%;
+  height: 82px;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.share-link-fields > label {
+  height: 16px;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+}
+
+.share-link-row {
+  display: flex;
+  width: 100%;
+  height: 34px;
+  gap: 8px;
+}
+
+.share-url-shell {
+  display: flex;
+  height: 34px;
+  min-width: 0;
+  flex: 1 1 auto;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.share-url-shell > span {
+  display: flex;
+  align-items: center;
+  padding: 0 8px 0 12px;
+}
+
+.share-url-shell img,
+.copy-share-button img,
+.share-access-note img,
+.sharing-callout > img {
+  display: block;
+}
+
+.share-url-shell input {
+  width: 100%;
+  height: 32px;
+  min-width: 0;
+  padding: 8px 12px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #1e293b;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.share-url-shell:focus-within {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.13);
+}
+
+.copy-share-button {
+  display: flex;
+  width: 102.595px;
+  height: 34px;
+  flex: 0 0 102.595px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--brand);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.copy-share-button:hover {
+  background: #4338ca;
+}
+
+.share-access-note {
+  display: flex;
+  height: 16px;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.sharing-callout {
+  display: flex;
+  width: 100%;
+  height: 69px;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 15px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.02);
+}
+
+.sharing-callout p {
+  margin: 0;
+  padding-right: 47.58px;
+  color: #475569;
+  font-size: 12px;
+  line-height: 19.5px;
+}
+
+.sharing-page button:focus-visible,
+.sharing-page a:focus-visible {
+  outline: 2px solid #818cf8;
+  outline-offset: 2px;
+}
+
+.sharing-breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+@media (min-height: 619px) {
+  .sharing-page {
+    min-height: 100vh;
+  }
+
+  .sharing-main {
+    height: auto;
+    min-height: 496.25px;
+    flex: 1 0 496.25px;
+  }
+}
+
+@media (max-width: 720px) {
+  .sharing-main {
+    height: auto;
+    min-height: 496.25px;
+    flex-basis: auto;
+    padding: 32px 20px;
+  }
+
+  .sharing-content {
+    width: 100%;
+    height: auto;
+  }
+
+  .sharing-intro {
+    height: auto;
+    flex-basis: auto;
+  }
+
+  .sharing-card {
+    height: auto;
+  }
+
+  .share-link-section {
+    height: auto;
+  }
+
+  .sharing-callout {
+    height: auto;
+  }
+
+  .sharing-callout p {
+    padding-right: 0;
+  }
+
+  .sharing-callout br {
+    display: none;
+  }
+}
+
+@media (max-width: 500px) {
+  .sharing-toggle-row {
+    height: auto;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .share-link-fields {
+    height: auto;
+  }
+
+  .share-link-row {
+    height: auto;
+    flex-direction: column;
+  }
+
+  .copy-share-button {
+    width: 100%;
+    flex-basis: 34px;
+  }
+
+  .share-access-note {
+    height: auto;
+    align-items: flex-start;
+  }
+}
