@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import arrowRightIcon from "./assets/login/arrow-right.svg";
 import brandMarkIcon from "./assets/login/brand-mark.svg";
 import cardMarkIcon from "./assets/login/card-mark.svg";
@@ -7,12 +7,33 @@ import eyeIcon from "./assets/login/eye.svg";
 import googleIcon from "./assets/login/google.svg";
 import helpIcon from "./assets/login/help.svg";
 import lockIcon from "./assets/login/lock.svg";
+import ProfileSetupPage from "./ProfileSetupPage";
 
 function App() {
   const [passwordVisible, setPasswordVisible] = useState(true);
+  const [path, setPath] = useState(window.location.pathname);
+
+  useEffect(() => {
+    const handlePopState = () => setPath(window.location.pathname);
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  useEffect(() => {
+    document.title =
+      path === "/onboarding/profiles"
+        ? "Connect coding profiles | Profligator"
+        : "Sign in | Profligator";
+  }, [path]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    window.history.pushState({}, "", "/onboarding/profiles");
+    setPath("/onboarding/profiles");
+  }
+
+  if (path === "/onboarding/profiles") {
+    return <ProfileSetupPage />;
   }
 
   return (
