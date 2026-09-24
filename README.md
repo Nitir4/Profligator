@@ -60,7 +60,7 @@ Planned screens:
 | Area | Technology | Purpose |
 | --- | --- | --- |
 | Web frontend | React, TypeScript, Vite | Component-based implementation of the Figma screens with fast local builds |
-| Styling | Tailwind CSS with CSS design tokens | Precise, reusable colors, spacing, type, borders, and responsive behavior |
+| Styling | CSS custom properties and component-scoped class naming | Precise, reusable colors, spacing, type, borders, and responsive behavior without a runtime styling dependency |
 | Routing and data | React Router, TanStack Query | Page routing, API caching, loading/error states, and refresh behavior |
 | Charts | Recharts plus a small custom contribution-grid component | Dashboard activity and distribution visualizations |
 | Forms and validation | React Hook Form, Zod | Typed validation for authentication, profile URLs, and sharing controls |
@@ -132,5 +132,4 @@ The detailed technical plan and live checklist are maintained in [`../implementa
 
 ## Status
 
-Planning and repository initialization are complete. Product code has not started yet. See the [progress tracker](../progress.md) for the current state and next task.
-
+Planning and repository initialization are complete. The Figma-matched login page is implemented and verified; subsequent pages remain intentionally unstarted pending page-by-page approval. See the [progress tracker](../progress.md) for the current state and next task.
