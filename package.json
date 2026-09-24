@@ -1,0 +1,13 @@
+{
+  "name": "profligator",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @profligator/web",
+    "build": "npm run build --workspace @profligator/web",
+    "preview": "npm run preview --workspace @profligator/web"
+  }
+}
