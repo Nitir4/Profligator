@@ -7,6 +7,7 @@ import eyeIcon from "./assets/login/eye.svg";
 import googleIcon from "./assets/login/google.svg";
 import helpIcon from "./assets/login/help.svg";
 import lockIcon from "./assets/login/lock.svg";
+import DashboardPage from "./DashboardPage";
 import ProfileSetupPage from "./ProfileSetupPage";
 
 function App() {
@@ -23,6 +24,8 @@ function App() {
     document.title =
       path === "/onboarding/profiles"
         ? "Connect coding profiles | Profligator"
+        : path === "/dashboard"
+          ? "Dashboard | Profligator"
         : "Sign in | Profligator";
   }, [path]);
 
@@ -34,6 +37,10 @@ function App() {
 
   if (path === "/onboarding/profiles") {
     return <ProfileSetupPage />;
+  }
+
+  if (path === "/dashboard") {
+    return <DashboardPage />;
   }
 
   return (

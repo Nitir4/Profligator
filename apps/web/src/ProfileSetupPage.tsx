@@ -176,6 +176,7 @@ function ProfileSetupPage() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSaved(true);
+    window.setTimeout(() => window.location.assign("/dashboard"), 250);
   }
 
   return (
