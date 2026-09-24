@@ -9,6 +9,7 @@ import helpIcon from "./assets/login/help.svg";
 import lockIcon from "./assets/login/lock.svg";
 import DashboardPage from "./DashboardPage";
 import ProfileSetupPage from "./ProfileSetupPage";
+import SharingPage from "./SharingPage";
 
 function App() {
   const [passwordVisible, setPasswordVisible] = useState(true);
@@ -26,7 +27,9 @@ function App() {
         ? "Connect coding profiles | Profligator"
         : path === "/dashboard"
           ? "Dashboard | Profligator"
-        : "Sign in | Profligator";
+          : path === "/settings/sharing"
+            ? "Profile sharing | Profligator"
+            : "Sign in | Profligator";
   }, [path]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -41,6 +44,10 @@ function App() {
 
   if (path === "/dashboard") {
     return <DashboardPage />;
+  }
+
+  if (path === "/settings/sharing") {
+    return <SharingPage />;
   }
 
   return (
