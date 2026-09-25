@@ -8,6 +8,7 @@ import googleIcon from "./assets/login/google.svg";
 import helpIcon from "./assets/login/help.svg";
 import lockIcon from "./assets/login/lock.svg";
 import DashboardPage from "./DashboardPage";
+import ExtensionNotificationPage from "./ExtensionNotificationPage";
 import ProfileSetupPage from "./ProfileSetupPage";
 import SharingPage from "./SharingPage";
 
@@ -27,6 +28,8 @@ function App() {
         ? "Connect coding profiles | Profligator"
         : path === "/dashboard"
           ? "Dashboard | Profligator"
+          : path === "/extension" || path === "/extension/duplicate-notification"
+            ? "Duplicate problem detected | Profligator"
           : path === "/settings/sharing"
             ? "Profile sharing | Profligator"
             : "Sign in | Profligator";
@@ -48,6 +51,10 @@ function App() {
 
   if (path === "/settings/sharing") {
     return <SharingPage />;
+  }
+
+  if (path === "/extension" || path === "/extension/duplicate-notification") {
+    return <ExtensionNotificationPage />;
   }
 
   return (
