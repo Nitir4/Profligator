@@ -1,4 +1,16 @@
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
+import {
+  ApiError,
+  AuthUser,
+  checkPlatformProfile,
+  disconnectPlatformProfile,
+  getCurrentUser,
+  linkPlatformProfile,
+  listPlatformProfiles,
+  startProfileSync,
+  SupportedPlatform,
+  waitForSync,
+} from "./api";
 import addIcon from "./assets/profiles/add.svg";
 import chevronDownIcon from "./assets/profiles/chevron-down.svg";
 import continueArrowIcon from "./assets/profiles/continue-arrow.svg";
@@ -23,10 +35,10 @@ type PlatformKey =
   | "github";
 
 type Profile = {
-  id: number;
+  id: string;
   platform: PlatformKey;
   handle: string;
-  verified: boolean;
+  state: "unchecked" | "ready" | "verified" | "fixture_only";
 };
 
 const platformDetails: Record<
@@ -56,15 +68,15 @@ const quickPlatforms: PlatformKey[] = [
   "github",
 ];
 
-const initialProfiles: Profile[] = [
-  { id: 1, platform: "leetcode", handle: "alex_dev96", verified: true },
-  {
-    id: 2,
-    platform: "geeksforgeeks",
-    handle: "alexander_codes",
-    verified: true,
-  },
-];
+const supportedPlatforms = new Set<PlatformKey>([
+  "leetcode",
+  "geeksforgeeks",
+  "codeforces",
+]);
+
+function isSupportedPlatform(platform: PlatformKey): platform is SupportedPlatform {
+  return supportedPlatforms.has(platform);
+}
 
 function ProfileRow({
   profile,
@@ -94,7 +106,7 @@ function ProfileRow({
             onChange({
               ...profile,
               platform: event.target.value as PlatformKey,
-              verified: false,
+              state: "unchecked",
             })
           }
         >
@@ -119,13 +131,19 @@ function ProfileRow({
           value={profile.handle}
           spellCheck={false}
           onChange={(event) =>
-            onChange({ ...profile, handle: event.target.value, verified: false })
+            onChange({ ...profile, handle: event.target.value, state: "unchecked" })
           }
         />
-        {profile.verified && (
+        {profile.state !== "unchecked" && (
           <span className="verified-badge">
             <img src={verifiedIcon} alt="" />
-            <span>Verified</span>
+            <span>
+              {profile.state === "fixture_only"
+                ? "Fixture"
+                : profile.state === "ready"
+                  ? "Ready"
+                  : "Verified"}
+            </span>
           </span>
         )}
       </label>
@@ -143,40 +161,162 @@ function ProfileRow({
 }
 
 function ProfileSetupPage() {
-  const [profiles, setProfiles] = useState<Profile[]>(initialProfiles);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
   const [saved, setSaved] = useState(false);
   const [checking, setChecking] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("Loading connected profiles…");
+  const [removedProfileIds, setRemovedProfileIds] = useState<string[]>([]);
+  const [user, setUser] = useState<AuthUser | null>(null);
 
-  const nextId = useMemo(
-    () => Math.max(0, ...profiles.map((profile) => profile.id)) + 1,
-    [profiles],
-  );
+  useEffect(() => {
+    let active = true;
+    getCurrentUser()
+      .then((currentUser) => {
+        if (!active) return [];
+        setUser(currentUser);
+        return listPlatformProfiles();
+      })
+      .then((savedProfiles) => {
+        if (!active) return;
+        setProfiles(
+          savedProfiles.length > 0
+            ? savedProfiles.map((profile) => ({
+                id: profile.id,
+                platform: profile.platform,
+                handle: profile.public_handle,
+                state:
+                  profile.verification_state === "fixture_only"
+                    ? "fixture_only"
+                    : profile.verification_state === "verified"
+                      ? "verified"
+                      : "unchecked",
+              }))
+            : [
+                {
+                  id: "local-codeforces",
+                  platform: "codeforces",
+                  handle: "",
+                  state: "unchecked",
+                },
+              ],
+        );
+        setMessage("You can modify, add, or disconnect profiles at any time in Settings.");
+      })
+      .catch((error: ApiError) => {
+        if (!active) return;
+        if (error.status === 401) {
+          window.location.assign("/login");
+          return;
+        }
+        setProfiles([
+          {
+            id: "local-codeforces",
+            platform: "codeforces",
+            handle: "",
+            state: "unchecked",
+          },
+        ]);
+        setMessage(error.message);
+      })
+      .finally(() => active && setLoading(false));
+    return () => {
+      active = false;
+    };
+  }, []);
 
   function addProfile(platform: PlatformKey = "codeforces") {
     setSaved(false);
     setProfiles((current) => [
       ...current,
-      { id: nextId, platform, handle: "", verified: false },
+      {
+        id: `local-${Date.now()}-${current.length}`,
+        platform,
+        handle: "",
+        state: "unchecked",
+      },
     ]);
   }
 
-  function checkAll() {
-    setChecking(true);
-    window.setTimeout(() => {
-      setProfiles((current) =>
-        current.map((profile) => ({
-          ...profile,
-          verified: profile.handle.trim().length > 0,
-        })),
+  function updateProfile(currentProfile: Profile, nextProfile: Profile) {
+    setSaved(false);
+    let replacement = nextProfile;
+    if (
+      !currentProfile.id.startsWith("local-") &&
+      (currentProfile.platform !== nextProfile.platform ||
+        currentProfile.handle !== nextProfile.handle)
+    ) {
+      setRemovedProfileIds((current) =>
+        current.includes(currentProfile.id) ? current : [...current, currentProfile.id],
       );
-      setChecking(false);
-    }, 450);
+      replacement = { ...nextProfile, id: `local-${Date.now()}` };
+    }
+    setProfiles((current) =>
+      current.map((item) => (item.id === currentProfile.id ? replacement : item)),
+    );
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function removeProfile(profile: Profile) {
+    setSaved(false);
+    if (!profile.id.startsWith("local-")) {
+      setRemovedProfileIds((current) =>
+        current.includes(profile.id) ? current : [...current, profile.id],
+      );
+    }
+    setProfiles((current) => current.filter((item) => item.id !== profile.id));
+  }
+
+  async function checkAll() {
+    setChecking(true);
+    setMessage("Checking profile handles…");
+    try {
+      const checked = await Promise.all(
+        profiles.map(async (profile) => {
+          if (!profile.handle.trim()) return profile;
+          if (!isSupportedPlatform(profile.platform)) {
+            throw new ApiError(`${platformDetails[profile.platform].label} is not supported yet.`, 422);
+          }
+          await checkPlatformProfile(profile.platform, profile.handle.trim());
+          return {
+            ...profile,
+            state: profile.platform === "codeforces" ? "ready" : "fixture_only",
+          } as Profile;
+        }),
+      );
+      setProfiles(checked);
+      setMessage("Profile checks completed.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Profile checks failed.");
+    } finally {
+      setChecking(false);
+    }
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSaved(true);
-    window.setTimeout(() => window.location.assign("/dashboard"), 250);
+    setSaving(true);
+    setSaved(false);
+    setMessage("Saving profiles and starting synchronization…");
+    try {
+      await Promise.all(removedProfileIds.map(disconnectPlatformProfile));
+      const populated = profiles.filter((profile) => profile.handle.trim());
+      for (const profile of populated) {
+        if (!isSupportedPlatform(profile.platform)) {
+          throw new ApiError(`${platformDetails[profile.platform].label} is not supported yet.`, 422);
+        }
+        const linked = await linkPlatformProfile(profile.platform, profile.handle.trim());
+        const run = await startProfileSync(linked.id);
+        await waitForSync(run);
+      }
+      setSaved(true);
+      setMessage("Profiles synchronized. Opening your dashboard…");
+      window.setTimeout(() => window.location.assign("/dashboard"), 250);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Profiles could not be saved.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -196,9 +336,9 @@ function ProfileSetupPage() {
             <span className="header-divider" aria-hidden="true" />
             <div className="account-chip">
               <span className="account-avatar" aria-hidden="true">
-                AD
+                {(user?.handle ?? "C").slice(0, 2).toUpperCase()}
               </span>
-              <span>alex@example.com</span>
+              <span>{user?.email ?? "Loading…"}</span>
             </div>
           </div>
         </div>
@@ -232,7 +372,12 @@ function ProfileSetupPage() {
                 <h2>Connected Accounts</h2>
                 <span>{profiles.length} profiles</span>
               </div>
-              <button className="check-all-button" type="button" onClick={checkAll}>
+              <button
+                className="check-all-button"
+                type="button"
+                onClick={checkAll}
+                disabled={loading || checking || saving}
+              >
                 <img src={refreshIcon} alt="" />
                 <span>{checking ? "Checking…" : "Check all"}</span>
               </button>
@@ -243,20 +388,8 @@ function ProfileSetupPage() {
                 <ProfileRow
                   key={profile.id}
                   profile={profile}
-                  onChange={(nextProfile) => {
-                    setSaved(false);
-                    setProfiles((current) =>
-                      current.map((item) =>
-                        item.id === nextProfile.id ? nextProfile : item,
-                      ),
-                    );
-                  }}
-                  onRemove={() => {
-                    setSaved(false);
-                    setProfiles((current) =>
-                      current.filter((item) => item.id !== profile.id),
-                    );
-                  }}
+                  onChange={(nextProfile) => updateProfile(profile, nextProfile)}
+                  onRemove={() => removeProfile(profile)}
                 />
               ))}
             </div>
@@ -282,15 +415,15 @@ function ProfileSetupPage() {
             </div>
 
             <div className="profiles-card-footer">
-              <p>
-                {saved
-                  ? "Your profiles have been saved."
-                  : "You can modify, add, or disconnect profiles at any time in Settings."}
-              </p>
+              <p role="status">{saved ? "Your profiles have been saved." : message}</p>
               <div className="profile-actions">
                 <a href="/dashboard">Skip for now</a>
-                <button className="save-profiles-button" type="submit">
-                  <span>Save &amp; Continue to Dashboard</span>
+                <button
+                  className="save-profiles-button"
+                  type="submit"
+                  disabled={loading || saving || checking}
+                >
+                  <span>{saving ? "Synchronizing…" : "Save & Continue to Dashboard"}</span>
                   <img src={continueArrowIcon} alt="" />
                 </button>
               </div>

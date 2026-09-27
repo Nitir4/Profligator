@@ -1,0 +1,25 @@
+{
+  "rank": "Fixture",
+  "records": [
+    {
+      "source_id": "subarray-sum-divisible-by-k",
+      "kind": "problem",
+      "status": "solved",
+      "title": "Subarray Sum Divisible by K",
+      "canonical_url": "https://www.geeksforgeeks.org/problems/subarray-sum-divisible-by-k/",
+      "difficulty": "Medium",
+      "topics": ["Array", "Hashing", "Prefix Sum"],
+      "occurred_at": "2024-10-08T12:15:00Z"
+    },
+    {
+      "source_id": "detect-cycle-in-an-undirected-graph",
+      "kind": "problem",
+      "status": "solved",
+      "title": "Detect Cycle in an Undirected Graph",
+      "canonical_url": "https://www.geeksforgeeks.org/problems/detect-cycle-in-an-undirected-graph/",
+      "difficulty": "Medium",
+      "topics": ["Graph", "Depth-First Search"],
+      "occurred_at": "2024-11-06T08:20:00Z"
+    }
+  ]
+}
