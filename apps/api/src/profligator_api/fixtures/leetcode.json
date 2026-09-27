@@ -1,0 +1,35 @@
+{
+  "rank": "Fixture",
+  "records": [
+    {
+      "source_id": "1",
+      "kind": "problem",
+      "status": "solved",
+      "title": "Two Sum",
+      "canonical_url": "https://leetcode.com/problems/two-sum/",
+      "difficulty": "Easy",
+      "topics": ["Array", "Hash Table"],
+      "occurred_at": "2024-10-01T09:30:00Z"
+    },
+    {
+      "source_id": "560",
+      "kind": "problem",
+      "status": "solved",
+      "title": "Subarray Sum Equals K",
+      "canonical_url": "https://leetcode.com/problems/subarray-sum-equals-k/",
+      "difficulty": "Medium",
+      "topics": ["Array", "Hash Table", "Prefix Sum"],
+      "occurred_at": "2024-10-12T14:00:00Z"
+    },
+    {
+      "source_id": "200",
+      "kind": "problem",
+      "status": "solved",
+      "title": "Number of Islands",
+      "canonical_url": "https://leetcode.com/problems/number-of-islands/",
+      "difficulty": "Medium",
+      "topics": ["Graph", "Breadth-First Search", "Depth-First Search"],
+      "occurred_at": "2024-11-03T17:45:00Z"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: profligator
+      POSTGRES_USER: profligator
+      POSTGRES_PASSWORD: profligator
+    ports:
+      - "${PROFLIGATOR_POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - profligator_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U profligator -d profligator"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "${PROFLIGATOR_REDIS_PORT:-6379}:6379"
+    volumes:
+      - profligator_redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  profligator_postgres:
+  profligator_redis:

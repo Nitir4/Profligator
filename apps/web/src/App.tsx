@@ -7,6 +7,7 @@ import eyeIcon from "./assets/login/eye.svg";
 import googleIcon from "./assets/login/google.svg";
 import helpIcon from "./assets/login/help.svg";
 import lockIcon from "./assets/login/lock.svg";
+import { loginCandidate, registerCandidate } from "./api";
 import DashboardPage from "./DashboardPage";
 import ExtensionNotificationPage from "./ExtensionNotificationPage";
 import ProfileSetupPage from "./ProfileSetupPage";
@@ -15,6 +16,12 @@ import SharingPage from "./SharingPage";
 function App() {
   const [passwordVisible, setPasswordVisible] = useState(true);
   const [path, setPath] = useState(window.location.pathname);
+  const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  const [email, setEmail] = useState("alex@example.com");
+  const [handle, setHandle] = useState("alex_dev96");
+  const [password, setPassword] = useState("secretpassword123");
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const handlePopState = () => setPath(window.location.pathname);
@@ -35,10 +42,23 @@ function App() {
             : "Sign in | Profligator";
   }, [path]);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    window.history.pushState({}, "", "/onboarding/profiles");
-    setPath("/onboarding/profiles");
+    setSubmitting(true);
+    setAuthError(null);
+    try {
+      if (authMode === "register") {
+        await registerCandidate(email, handle, password);
+      } else {
+        await loginCandidate(email, password);
+      }
+      window.history.pushState({}, "", "/onboarding/profiles");
+      setPath("/onboarding/profiles");
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : "Authentication failed.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   if (path === "/onboarding/profiles") {
@@ -77,13 +97,21 @@ function App() {
       </header>
 
       <main className="login-main">
-        <section className="login-card" aria-labelledby="login-title" data-node-id="2603:1427">
+        <section
+          className={`login-card ${authMode === "register" ? "register-mode" : ""} ${authError ? "has-auth-error" : ""}`}
+          aria-labelledby="login-title"
+          data-node-id="2603:1427"
+        >
           <div className="card-heading" data-node-id="2603:1429">
             <span className="card-mark" aria-hidden="true">
               <img src={cardMarkIcon} alt="" />
             </span>
-            <h1 id="login-title">Welcome back</h1>
-            <p>Sign in to access your unified coding statistics.</p>
+            <h1 id="login-title">{authMode === "login" ? "Welcome back" : "Create account"}</h1>
+            <p>
+              {authMode === "login"
+                ? "Sign in to access your unified coding statistics."
+                : "Create your candidate account to connect coding profiles."}
+            </p>
           </div>
 
           <form className="login-form" onSubmit={handleSubmit} data-node-id="2603:1437">
@@ -98,10 +126,31 @@ function App() {
                   name="email"
                   type="email"
                   autoComplete="email"
-                  defaultValue="alex@example.com"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
                 />
               </div>
             </div>
+
+            {authMode === "register" && (
+              <div className="field-group">
+                <label htmlFor="handle">Candidate handle</label>
+                <div className="input-shell">
+                  <span className="leading-icon" aria-hidden="true">
+                    <img src={emailIcon} alt="" />
+                  </span>
+                  <input
+                    id="handle"
+                    name="handle"
+                    type="text"
+                    autoComplete="username"
+                    minLength={3}
+                    value={handle}
+                    onChange={(event) => setHandle(event.target.value)}
+                  />
+                </div>
+              </div>
+            )}
 
             <div className="field-group">
               <div className="field-label-row">
@@ -117,7 +166,9 @@ function App() {
                   name="password"
                   type={passwordVisible ? "text" : "password"}
                   autoComplete="current-password"
-                  defaultValue="secretpassword123"
+                  minLength={authMode === "register" ? 10 : undefined}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
                 />
                 <button
                   className="password-toggle"
@@ -131,21 +182,40 @@ function App() {
               </div>
             </div>
 
-            <button className="sign-in-button" type="submit">
-              <span>Sign In</span>
+            {authError && <p className="auth-error" role="alert">{authError}</p>}
+
+            <button className="sign-in-button" type="submit" disabled={submitting}>
+              <span>
+                {submitting
+                  ? "Please wait…"
+                  : authMode === "login"
+                    ? "Sign In"
+                    : "Create Account"}
+              </span>
               <img src={arrowRightIcon} alt="" />
             </button>
           </form>
 
-          <button className="google-button" type="button" data-node-id="2603:1469">
+          <button className="google-button" type="button" data-node-id="2603:1469" disabled>
             <img src={googleIcon} alt="" />
             <span>Continue with Google</span>
           </button>
 
           <div className="card-footer" data-node-id="2603:1477">
             <p>
-              <span>Don&apos;t have an account?</span>{" "}
-              <a href="#create-account">Create account</a>
+              <span>
+                {authMode === "login" ? "Don't have an account?" : "Already have an account?"}
+              </span>{" "}
+              <button
+                className="auth-mode-link"
+                type="button"
+                onClick={() => {
+                  setAuthMode((current) => (current === "login" ? "register" : "login"));
+                  setAuthError(null);
+                }}
+              >
+                {authMode === "login" ? "Create account" : "Sign in"}
+              </button>
             </p>
           </div>
         </section>
