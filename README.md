@@ -17,8 +17,8 @@ The MVP will provide:
 
 1. Candidate registration and sign-in.
 2. Public profile linking and verification.
-3. LeetCode and GeeksforGeeks profile aggregation.
-4. A Codeforces connector immediately after the first two connectors are stable.
+3. LeetCode and GeeksforGeeks aggregation through reviewed, pinned, self-hosted open-source services and replaceable backend adapters, subject to validated capabilities and recorded access conditions; sanitized fixtures remain the current implementation.
+4. Codeforces aggregation through its documented public API as the first live connector.
 5. Periodic synchronization of solved problems, difficulty, topics, activity, and contest data when the source exposes it publicly.
 6. A candidate dashboard showing, in priority order:
    - total and unique problems solved;
@@ -68,6 +68,7 @@ Planned screens:
 | Data access | SQLAlchemy, Alembic | Relational models, queries, and versioned migrations |
 | Database | PostgreSQL with `pgvector` | Users, profiles, records, clusters, sync history, and vector-assisted candidate matching |
 | Collection | `httpx`, Beautiful Soup, and Playwright only where necessary | API/page retrieval, parsing, and browser rendering for permitted public data |
+| Upstream aggregation (planned) | Reviewed, pinned, self-hosted open-source service(s) | Reuse maintained collectors behind backend adapters; candidates are not selected or audited yet |
 | Background work | Redis and RQ | Scheduled profile synchronization and matching outside web requests |
 | Similarity layer | Provider-neutral LLM adapter plus embeddings | Shortlist likely matches, then evaluate supported LLM providers for accuracy, cost, and latency |
 | Authentication | Short-lived JWT access tokens, rotating refresh tokens, and Argon2 password hashes | Candidate sessions and protected API access |
@@ -91,6 +92,8 @@ flowchart LR
     WK --> GFG[GeeksforGeeks connector]
     WK --> CF[Codeforces connector]
     WK --> LLM[Provider-neutral LLM adapter]
+    LC --> AGG[Self-hosted aggregator — planned]
+    GFG --> AGG
     LC --> DB
     GFG --> DB
     CF --> DB
@@ -98,6 +101,16 @@ flowchart LR
 ```
 
 Connectors normalize source-specific records into one internal format. Raw platform records remain traceable, while the matcher groups records into unique-problem clusters. Both web views and the extension consume the same API and matching results.
+
+## Upstream aggregator strategy
+
+On 27 September 2026, the user approved reusing reviewed open-source collectors rather than writing every platform scraper ourselves. The planned service will run internally at an exact reviewed version; FastAPI adapters will normalize its responses through the existing background-sync pipeline. The browser will continue to use only Profligator's API. We will adopt tested upstream fixes, preserve rollback, and keep adapters replaceable if maintenance stops.
+
+Initial candidates are [alfa-leetcode-api](https://github.com/alfaarghya/alfa-leetcode-api) for LeetCode and [coding-profile-service-v2.0](https://github.com/mearjuntripathi/coding-profile-service-v2.0) for multi-platform stats, including GFG. Recent commits were checked, but neither project has been security-audited, capability-tested, selected, or integrated. Source/dependency review and license verification precede installation and pinning.
+
+Summary counts alone do not support duplicate detection. Establish whether a service provides individual solved IDs/URLs, usable metadata, pagination, and full or partial history. Recent submissions must not be represented as a complete solved list. Source totals, ingested records, and deduplicated coverage must stay distinguishable; missing fields remain unavailable rather than invented.
+
+Software reuse and provider access rules are separate questions. The earlier LeetCode/GFG terms findings remain recorded; an open-source wrapper does not establish provider permission. See [provider feasibility](../provider_feasibility.md) for candidate evidence, runtime status, and evaluation gates.
 
 ## Planned repository structure
 
@@ -118,18 +131,18 @@ Profligator/
 └── .github/workflows/       # CI checks
 ```
 
-The directories above are the intended structure and will be created during implementation; this documentation-only starting point does not claim they already exist.
+This is the intended layout. `apps/web`, `apps/api`, and `infra` exist; the extension workspace, shared packages, top-level validation suite, and CI configuration remain planned. Planning, feasibility, progress, and agent handover documents live one directory above this Git repository; the project README stays in the repository.
 
 ## Delivery order
 
 Development follows three one-week increments:
 
 - **Week 1 — foundation and exact frontend:** scaffold the monorepo, encode the Figma design tokens, implement the documented screens with fixture data, define the schema/API contracts, and establish tests and CI.
-- **Week 2 — real aggregation:** implement and validate LeetCode and GeeksforGeeks connectors, persist normalized records, run background syncs, and connect the dashboard to the API. Add Codeforces after the first two are stable.
+- **Week 2 — real aggregation:** review upstream collectors, self-host pinned versions, implement LeetCode/GFG adapters for validated capabilities, preserve explicit fixture mode during evaluation, and continue the official Codeforces connector, persisted records, background syncs, and API-backed dashboard.
 - **Week 3 — deduplication and sharing:** evaluate matching models, build unique clusters and notifications, enforce consent-based sharing, integrate the browser extension, harden error states, and complete end-to-end acceptance tests.
 
-The detailed technical plan and live checklist are maintained in [`../implementation.md`](../implementation.md) and [`../progress.md`](../progress.md).
+The detailed technical plan and live checklist are maintained in [`../implementation.md`](../implementation.md) and [`../progress.md`](../progress.md). The next agent should begin with [`../project_handover.md`](../project_handover.md).
 
 ## Status
 
-Planning and repository initialization are complete. The Figma-matched login page is implemented and verified; subsequent pages remain intentionally unstarted pending page-by-page approval. See the [progress tracker](../progress.md) for the current state and next task.
+All supplied Figma screens are implemented and were previously visually verified. The backend includes FastAPI/OpenAPI, SQLAlchemy models and migrations, candidate authentication, fixture-backed LeetCode and GeeksforGeeks adapters, a live Codeforces adapter, Redis/RQ profile-sync jobs, and persisted dashboard analytics. Login, profile setup, totals, activity, topics, difficulty, freshness, and partial-data notices use the API. Unique counts are provisional title-based counts; semantic matching, secure backend sharing, periodic scheduling, and the actual extension workspace remain unfinished. The upstream strategy is approved but not implemented. See the [progress tracker](../progress.md) for historical verification evidence and next tasks.

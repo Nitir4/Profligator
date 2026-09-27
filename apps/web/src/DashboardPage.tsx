@@ -1,4 +1,12 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  ApiError,
+  AuthUser,
+  DashboardData,
+  getCurrentUser,
+  getDashboard,
+  logoutCandidate,
+} from "./api";
 import brandMarkIcon from "./assets/dashboard/brand-mark.svg";
 import chevronDownIcon from "./assets/dashboard/chevron-down.svg";
 import copyLinkIcon from "./assets/dashboard/copy-link.svg";
@@ -7,64 +15,30 @@ import solvedIcon from "./assets/dashboard/solved.svg";
 import userIcon from "./assets/dashboard/user.svg";
 import verifiedIcon from "./assets/dashboard/verified.svg";
 
-const heatmapWeeks = [
-  "0120130",
-  "1234201",
-  "2301220",
-  "0134210",
-  "1023301",
-  "3242100",
-  "0120321",
-  "2334201",
-  "1201340",
-  "0012231",
-  "1230120",
-  "3421013",
-  "0123240",
-  "1012301",
-  "2301420",
-  "0123103",
-  "1234210",
-  "0123012",
-  "2342100",
-  "1230123",
-  "0124210",
-  "1230120",
-  "3242101",
-  "0123012",
-  "1234210",
-  "0102321",
-  "2342100",
-  "1230123",
-  "0124210",
-  "1230120",
-  "3242101",
-  "0123012",
-  "1234210",
-  "0102321",
-  "2342100",
-  "1230123",
-];
-
 const heatmapColors = ["#ebedf0", "#9be9a8", "#40c463", "#30a14e", "#216e39"];
+const difficultyColors: Record<string, string> = {
+  Easy: "#10b981",
+  Medium: "#f59e0b",
+  Hard: "#f43f5e",
+};
 
-const topics = [
-  { name: "Arrays & Hashing", count: 248, percent: 27.7 },
-  { name: "Dynamic Programming", count: 184, percent: 20.6 },
-  { name: "Trees & Binary Search", count: 146, percent: 16.3 },
-  { name: "Graphs & BFS/DFS", count: 122, percent: 13.6 },
-  { name: "Strings & Two Pointers", count: 108, percent: 12.1 },
-  { name: "Math & Bit Manipulation", count: 86, percent: 9.6 },
-];
+function addUtcDays(value: Date, days: number) {
+  const next = new Date(value);
+  next.setUTCDate(next.getUTCDate() + days);
+  return next;
+}
 
-const difficulties = [
-  { name: "Easy", count: 312, percent: 34.9, color: "#10b981" },
-  { name: "Medium", count: 476, percent: 53.2, color: "#f59e0b" },
-  { name: "Hard", count: 106, percent: 11.9, color: "#f43f5e" },
-];
+function utcDateKey(value: Date) {
+  return value.toISOString().slice(0, 10);
+}
 
-function DashboardHeader() {
+function DashboardHeader({ user }: { user: AuthUser | null }) {
   const [menuOpen, setMenuOpen] = useState(false);
+
+  async function signOut() {
+    await logoutCandidate().catch(() => undefined);
+    window.location.assign("/login");
+  }
 
   return (
     <header className="dashboard-header" data-node-id="2603:2024">
@@ -95,8 +69,8 @@ function DashboardHeader() {
               <img src={userIcon} alt="" />
             </span>
             <span className="dashboard-user-copy">
-              <strong>Alex</strong>
-              <span>alex@example.com</span>
+              <strong>{user?.handle ?? "Candidate"}</strong>
+              <span>{user?.email ?? "Loading…"}</span>
             </span>
             <button
               className="dashboard-user-menu-button"
@@ -110,7 +84,7 @@ function DashboardHeader() {
             {menuOpen && (
               <div className="dashboard-user-menu">
                 <a href="/onboarding/profiles">Manage profiles</a>
-                <a href="/login">Sign out</a>
+                <button type="button" onClick={signOut}>Sign out</button>
               </div>
             )}
           </div>
@@ -120,7 +94,17 @@ function DashboardHeader() {
   );
 }
 
-function StatCards() {
+const platformLabels: Record<string, string> = {
+  leetcode: "LeetCode",
+  geeksforgeeks: "GeeksforGeeks",
+  codeforces: "Codeforces",
+};
+
+function StatCards({ dashboard, loading }: { dashboard: DashboardData | null; loading: boolean }) {
+  const total = dashboard?.total_problems_solved;
+  const unique = dashboard?.provisional_unique_problems;
+  const uniqueRatio = total && unique !== undefined ? `${((unique / total) * 100).toFixed(1)}%` : "—";
+
   return (
     <section className="dashboard-stat-grid" aria-label="Problem statistics">
       <article className="dashboard-stat-card total-card" data-node-id="2603:1549">
@@ -129,15 +113,23 @@ function StatCards() {
             <span>Total Problems Solved</span>
             <img src={solvedIcon} alt="" />
           </div>
-          <strong className="stat-number">1,428</strong>
-          <p>Cumulative problems solved across all 3 connected platforms.</p>
+          <strong className="stat-number">{loading ? "…" : (total ?? 0).toLocaleString()}</strong>
+          <p>
+            Cumulative problems solved across all {dashboard?.connected_profiles ?? 0} connected
+            platforms.
+          </p>
         </div>
         <div className="stat-platforms">
-          <span>LeetCode: <strong>812</strong></span>
-          <i aria-hidden="true">•</i>
-          <span>Codeforces: <strong>386</strong></span>
-          <i aria-hidden="true">•</i>
-          <span>HackerRank: <strong>230</strong></span>
+          {dashboard?.platforms.length ? (
+            dashboard.platforms.map((platform, index) => (
+              <span key={`${platform.platform}-${platform.profile_handle}`}>
+                {index > 0 && <i aria-hidden="true">•</i>}
+                {platformLabels[platform.platform]}: <strong>{platform.solved}</strong>
+              </span>
+            ))
+          ) : (
+            <span>No synchronized profiles yet</span>
+          )}
         </div>
       </article>
 
@@ -145,9 +137,9 @@ function StatCards() {
         <div className="stat-content">
           <div className="stat-label-row">
             <span>Unique Problems Solved</span>
-            <span className="unique-ratio">62.6% unique ratio</span>
+            <span className="unique-ratio">{uniqueRatio} unique ratio</span>
           </div>
-          <strong className="stat-number">894</strong>
+          <strong className="stat-number">{loading ? "…" : (unique ?? 0).toLocaleString()}</strong>
           <p>
             Deduplicated unique algorithmic problems, excluding identical challenges solved
             across multiple platforms.
@@ -155,57 +147,107 @@ function StatCards() {
         </div>
         <div className="normalized-note">
           <img src={verifiedIcon} alt="" />
-          <span>Normalized across algorithmic classification standards</span>
+          <span>{dashboard?.uniqueness_notice ?? "Waiting for synchronized profile data"}</span>
         </div>
       </article>
     </section>
   );
 }
 
-function ActivityHeatmap() {
-  const [range, setRange] = useState("Last 12 Months");
-  const ranges = ["Last 12 Months", "2024", "2023"];
+function ActivityHeatmap({ dashboard }: { dashboard: DashboardData | null }) {
+  const [range, setRange] = useState("last-12-months");
+  const activity = dashboard?.activity;
+  const ranges = useMemo(() => {
+    const years = Array.from(
+      new Set((activity?.days ?? []).map((day) => day.date.slice(0, 4))),
+    ).sort((left, right) => right.localeCompare(left));
+    return [
+      { key: "last-12-months", label: "Last 12 Months" },
+      ...years.slice(0, 3).map((year) => ({ key: year, label: year })),
+    ];
+  }, [activity]);
+
+  const view = useMemo(() => {
+    const counts = new Map((activity?.days ?? []).map((day) => [day.date, day.count]));
+    const now = new Date();
+    const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    const isYear = /^\d{4}$/.test(range);
+    const year = isYear ? Number(range) : today.getUTCFullYear();
+    const start = isYear
+      ? new Date(Date.UTC(year, 0, 1))
+      : addUtcDays(today, -364);
+    const end = isYear ? new Date(Date.UTC(year, 11, 31)) : today;
+    const mondayOffset = (start.getUTCDay() + 6) % 7;
+    const gridStart = addUtcDays(start, -mondayOffset);
+    const gridEnd = addUtcDays(end, 6 - ((end.getUTCDay() + 6) % 7));
+    const maximum = Math.max(
+      1,
+      ...Array.from(counts.entries())
+        .filter(([key]) => key >= utcDateKey(start) && key <= utcDateKey(end))
+        .map(([, count]) => count),
+    );
+    const weeks: Array<Array<{ date: string; count: number; level: number }>> = [];
+    for (let weekStart = gridStart; weekStart <= gridEnd; weekStart = addUtcDays(weekStart, 7)) {
+      const week = Array.from({ length: 7 }, (_, dayIndex) => {
+        const day = addUtcDays(weekStart, dayIndex);
+        const key = utcDateKey(day);
+        const inRange = day >= start && day <= end;
+        const count = inRange ? (counts.get(key) ?? 0) : 0;
+        return {
+          date: key,
+          count,
+          level: count === 0 ? 0 : Math.max(1, Math.ceil((count / maximum) * 4)),
+        };
+      });
+      weeks.push(week);
+    }
+    const monthFormatter = new Intl.DateTimeFormat("en", {
+      month: "short",
+      timeZone: "UTC",
+    });
+    const monthStart = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), 1));
+    const months = Array.from({ length: 12 }, (_, index) =>
+      monthFormatter.format(new Date(Date.UTC(monthStart.getUTCFullYear(), monthStart.getUTCMonth() + index, 1))),
+    );
+    const total = (activity?.days ?? []).reduce(
+      (sum, day) =>
+        day.date >= utcDateKey(start) && day.date <= utcDateKey(end) ? sum + day.count : sum,
+      0,
+    );
+    return { weeks, months, total };
+  }, [activity, range]);
 
   return (
     <section className="activity-card" aria-labelledby="activity-title" data-node-id="2603:1590">
       <div className="activity-header">
         <div>
           <h2 id="activity-title">Coding Activity</h2>
-          <p>642 submissions in the past year</p>
+          <p>{view.total.toLocaleString()} solved records in the selected period</p>
         </div>
         <div className="activity-range" aria-label="Activity period">
           {ranges.map((item) => (
             <button
-              className={range === item ? "active" : ""}
-              key={item}
+              className={range === item.key ? "active" : ""}
+              key={item.key}
               type="button"
-              aria-pressed={range === item}
-              onClick={() => setRange(item)}
+              aria-pressed={range === item.key}
+              onClick={() => setRange(item.key)}
             >
-              {item}
+              {item.label}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="heatmap-scroll" role="img" aria-label={`Submission activity for ${range}`}>
+      <div
+        className="heatmap-scroll"
+        role="img"
+        aria-label={`${view.total} solved records for ${ranges.find((item) => item.key === range)?.label ?? range}`}
+      >
         <div className="heatmap-canvas">
           <div className="month-labels" aria-hidden="true">
-            {[
-              "Jan",
-              "Feb",
-              "Mar",
-              "Apr",
-              "May",
-              "Jun",
-              "Jul",
-              "Aug",
-              "Sep",
-              "Oct",
-              "Nov",
-              "Dec",
-            ].map((month) => (
-              <span key={month}>{month}</span>
+            {view.months.map((month, index) => (
+              <span key={`${month}-${index}`}>{month}</span>
             ))}
           </div>
           <div className="heatmap-grid-wrap">
@@ -214,15 +256,20 @@ function ActivityHeatmap() {
               <span>Wed</span>
               <span>Fri</span>
             </div>
-            <div className="heatmap-grid" aria-hidden="true">
-              {heatmapWeeks.map((week, weekIndex) => (
-                <span className="heatmap-week" key={`${week}-${weekIndex}`}>
-                  {[...week].map((level, dayIndex) => (
+            <div
+              className="heatmap-grid"
+              aria-hidden="true"
+              style={{ gridTemplateColumns: `repeat(${view.weeks.length}, 11px)` }}
+            >
+              {view.weeks.map((week) => (
+                <span className="heatmap-week" key={week[0].date}>
+                  {week.map((day, dayIndex) => (
                     <i
-                      key={`${weekIndex}-${dayIndex}`}
+                      key={day.date}
+                      title={`${day.date}: ${day.count}`}
                       style={{
                         top: `${dayIndex * 5.8571429}px`,
-                        backgroundColor: heatmapColors[Number(level)],
+                        backgroundColor: heatmapColors[day.level],
                       }}
                     />
                   ))}
@@ -235,9 +282,9 @@ function ActivityHeatmap() {
 
       <div className="heatmap-footer">
         <div>
-          <span>Current streak: <strong>14 days</strong></span>
+          <span>Current streak: <strong>{activity?.current_streak ?? 0} days</strong></span>
           <i aria-hidden="true">•</i>
-          <span>Longest streak: <strong>42 days</strong></span>
+          <span>Longest streak: <strong>{activity?.longest_streak ?? 0} days</strong></span>
         </div>
         <div className="heatmap-legend" aria-label="Less to more activity">
           <span>Less</span>
@@ -251,28 +298,38 @@ function ActivityHeatmap() {
   );
 }
 
-function BreakdownCards() {
+function BreakdownCards({ dashboard }: { dashboard: DashboardData | null }) {
+  const topics = dashboard?.topics.items ?? [];
+  const difficulties = (dashboard?.difficulties.items ?? []).map((difficulty) => ({
+    ...difficulty,
+    color: difficultyColors[difficulty.name] ?? "#94a3b8",
+  }));
+
   return (
     <section className="dashboard-breakdowns">
       <article className="breakdown-card topic-card" data-node-id="2603:1912">
         <div className="breakdown-heading">
           <h2>Topic Breakdown</h2>
-          <p>Distribution of solved problems by category</p>
+          <p>Distribution of provider-supplied topic assignments</p>
         </div>
         <div className="topic-list">
-          {topics.map((topic) => (
-            <div className="topic-row" key={topic.name}>
-              <div>
-                <span>{topic.name}</span>
-                <span className="topic-value">
-                  {topic.count} solved <i aria-hidden="true">·</i> {topic.percent}%
+          {topics.length ? (
+            topics.map((topic) => (
+              <div className="topic-row" key={topic.name}>
+                <div>
+                  <span>{topic.name}</span>
+                  <span className="topic-value">
+                    {topic.count} tagged <i aria-hidden="true">·</i> {topic.percent}%
+                  </span>
+                </div>
+                <span className="topic-track">
+                  <i style={{ width: `${topic.percent}%` }} />
                 </span>
               </div>
-              <span className="topic-track">
-                <i style={{ width: `${topic.percent}%` }} />
-              </span>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p className="dashboard-empty-copy">No topic metadata is available yet.</p>
+          )}
         </div>
       </article>
 
@@ -307,8 +364,12 @@ function BreakdownCards() {
           ))}
         </div>
         <div className="difficulty-summary">
-          <span>Combined algorithmic problems</span>
-          <strong>894 Total</strong>
+          <span>
+            {dashboard?.difficulties.unrated_records
+              ? `${dashboard.difficulties.unrated_records} unrated records excluded`
+              : "All synchronized records are rated"}
+          </span>
+          <strong>{dashboard?.difficulties.rated_records ?? 0} Rated</strong>
         </div>
       </article>
     </section>
@@ -317,6 +378,37 @@ function BreakdownCards() {
 
 function DashboardPage() {
   const [copied, setCopied] = useState(false);
+  const [dashboard, setDashboard] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    getCurrentUser()
+      .then((currentUser) => {
+        if (!active) return null;
+        setUser(currentUser);
+        return getDashboard();
+      })
+      .then((data) => {
+        if (data === null) return;
+        if (!active) return;
+        setDashboard(data);
+        setError(null);
+      })
+      .catch((requestError: ApiError) => {
+        if (requestError.status === 401) {
+          window.location.assign("/login");
+          return;
+        }
+        if (active) setError(requestError.message);
+      })
+      .finally(() => active && setLoading(false));
+    return () => {
+      active = false;
+    };
+  }, []);
 
   async function copyProfileLink() {
     try {
@@ -330,7 +422,7 @@ function DashboardPage() {
 
   return (
     <div className="dashboard-page" data-node-id="2603:1500">
-      <DashboardHeader />
+      <DashboardHeader user={user} />
 
       <main className="dashboard-main">
         <div className="dashboard-content">
@@ -342,19 +434,18 @@ function DashboardPage() {
                 <span>Overview</span>
               </div>
               <div className="dashboard-name-row">
-                <h1>Alex</h1>
-                <span>Senior Software Engineer</span>
+                <h1>{user?.handle ?? "Candidate"}</h1>
+                <span>Candidate Profile</span>
               </div>
               <div className="connected-pills" aria-label="Connected profiles">
-                {[
-                  ["LeetCode", "alex_dev"],
-                  ["GitHub", "alex-dev"],
-                  ["Codeforces", "alex_cf"],
-                ].map(([platform, handle]) => (
-                  <span className="connected-pill" key={platform}>
+                {dashboard?.platforms.map((profile) => (
+                  <span
+                    className="connected-pill"
+                    key={`${profile.platform}-${profile.profile_handle}`}
+                  >
                     <i aria-hidden="true" />
-                    <strong>{platform}:</strong>
-                    <span>{handle}</span>
+                    <strong>{platformLabels[profile.platform]}:</strong>
+                    <span>{profile.profile_handle}</span>
                   </span>
                 ))}
               </div>
@@ -372,9 +463,32 @@ function DashboardPage() {
             </div>
           </section>
 
-          <StatCards />
-          <ActivityHeatmap />
-          <BreakdownCards />
+          {error && (
+            <p className="dashboard-api-error" role="alert">
+              {error}
+            </p>
+          )}
+          {dashboard?.data_state === "empty" && (
+            <div className="dashboard-data-notice empty" role="status">
+              <strong>No synchronized problem data yet.</strong>
+              <span>Connect a supported profile and run its first sync to populate analytics.</span>
+              <a href="/onboarding/profiles">Manage profiles</a>
+            </div>
+          )}
+          {dashboard?.data_state === "partial" && (
+            <div className="dashboard-data-notice" role="status">
+              <strong>Some analytics are incomplete.</strong>
+              <span>{dashboard.partial_reasons.join(" ")}</span>
+              {dashboard.last_successful_sync && (
+                <small>
+                  Latest successful sync: {new Date(dashboard.last_successful_sync).toLocaleString()}
+                </small>
+              )}
+            </div>
+          )}
+          <StatCards dashboard={dashboard} loading={loading} />
+          <ActivityHeatmap dashboard={dashboard} />
+          <BreakdownCards dashboard={dashboard} />
         </div>
       </main>
 

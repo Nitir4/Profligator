@@ -133,6 +133,18 @@ a {
   box-shadow: 0 4px 24px -4px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
 }
 
+.login-card.register-mode {
+  height: 634px;
+}
+
+.login-card.has-auth-error:not(.register-mode) {
+  height: 580px;
+}
+
+.login-card.register-mode.has-auth-error {
+  height: 666px;
+}
+
 .card-heading {
   position: absolute;
   top: 36px;
@@ -310,6 +322,19 @@ a:focus-visible {
   background: #4338ca;
 }
 
+.sign-in-button:disabled,
+.google-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.auth-error {
+  margin: -4px 0;
+  color: #b91c1c;
+  font-size: 12px;
+  line-height: 18px;
+}
+
 .sign-in-button img {
   display: block;
 }
@@ -339,6 +364,18 @@ a:focus-visible {
   display: block;
 }
 
+.register-mode .google-button {
+  top: 501px;
+}
+
+.has-auth-error:not(.register-mode) .google-button {
+  top: 447px;
+}
+
+.register-mode.has-auth-error .google-button {
+  top: 534px;
+}
+
 .card-footer {
   position: absolute;
   top: 472.75px;
@@ -363,6 +400,29 @@ a:focus-visible {
   font-weight: 500;
 }
 
+.auth-mode-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--brand);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.register-mode .card-footer {
+  top: 559px;
+}
+
+.has-auth-error:not(.register-mode) .card-footer {
+  top: 505px;
+}
+
+.register-mode.has-auth-error .card-footer {
+  top: 592px;
+}
+
 .product-footer {
   height: 64px;
   color: var(--muted);
@@ -383,7 +443,8 @@ a:focus-visible {
 .product-footer a:hover,
 .documentation-link:hover,
 .field-label-row a:hover,
-.card-footer a:hover {
+.card-footer a:hover,
+.auth-mode-link:hover {
   text-decoration: underline;
 }
 
@@ -991,6 +1052,12 @@ a:focus-visible {
   background: #4338ca;
 }
 
+.check-all-button:disabled,
+.save-profiles-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 .save-profiles-button img {
   display: block;
 }
@@ -1326,14 +1393,21 @@ a:focus-visible {
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
 }
 
-.dashboard-user-menu a {
+.dashboard-user-menu a,
+.dashboard-user-menu button {
+  width: 100%;
   padding: 7px 8px;
   border-radius: 5px;
+  border: 0;
+  background: transparent;
   color: #475569;
+  cursor: pointer;
   font-size: 12px;
+  text-align: left;
 }
 
-.dashboard-user-menu a:hover {
+.dashboard-user-menu a:hover,
+.dashboard-user-menu button:hover {
   background: #f8fafc;
 }
 
@@ -1489,6 +1563,52 @@ a:focus-visible {
   align-items: start;
   gap: 24px;
   margin-bottom: 40px;
+}
+
+.dashboard-api-error {
+  margin: -20px 0 20px;
+  padding: 10px 14px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.dashboard-data-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: -20px 0 20px;
+  padding: 10px 14px;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  background: #fffbeb;
+  color: #92400e;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.dashboard-data-notice.empty {
+  border-color: #c7d2fe;
+  background: #eef2ff;
+  color: #3730a3;
+}
+
+.dashboard-data-notice span {
+  flex: 1;
+}
+
+.dashboard-data-notice small {
+  color: inherit;
+  white-space: nowrap;
+}
+
+.dashboard-data-notice a {
+  font-weight: 600;
+  text-decoration: underline;
+  white-space: nowrap;
 }
 
 .dashboard-stat-card,
@@ -1806,6 +1926,17 @@ a:focus-visible {
 
 .topic-list {
   height: 192px;
+}
+
+.dashboard-empty-copy {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
 }
 
 .topic-row {
