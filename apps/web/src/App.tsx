@@ -10,16 +10,18 @@ import lockIcon from "./assets/login/lock.svg";
 import { loginCandidate, registerCandidate } from "./api";
 import DashboardPage from "./DashboardPage";
 import ExtensionNotificationPage from "./ExtensionNotificationPage";
+import IntegrationsPage from "./IntegrationsPage";
 import ProfileSetupPage from "./ProfileSetupPage";
 import SharingPage from "./SharingPage";
+import TeamPage from "./TeamPage";
 
 function App() {
-  const [passwordVisible, setPasswordVisible] = useState(true);
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const [path, setPath] = useState(window.location.pathname);
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
-  const [email, setEmail] = useState("alex@example.com");
-  const [handle, setHandle] = useState("alex_dev96");
-  const [password, setPassword] = useState("secretpassword123");
+  const [email, setEmail] = useState("");
+  const [handle, setHandle] = useState("");
+  const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -35,6 +37,10 @@ function App() {
         ? "Connect coding profiles | Profligator"
         : path === "/dashboard"
           ? "Dashboard | Profligator"
+          : path === "/integrations"
+            ? "Integrations | Profligator"
+          : path === "/team"
+            ? "Team | Profligator"
           : path === "/extension" || path === "/extension/duplicate-notification"
             ? "Duplicate problem detected | Profligator"
           : path === "/settings/sharing"
@@ -67,6 +73,14 @@ function App() {
 
   if (path === "/dashboard") {
     return <DashboardPage />;
+  }
+
+  if (path === "/integrations") {
+    return <IntegrationsPage />;
+  }
+
+  if (path === "/team") {
+    return <TeamPage />;
   }
 
   if (path === "/settings/sharing") {
