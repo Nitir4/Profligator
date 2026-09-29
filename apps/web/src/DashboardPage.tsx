@@ -5,15 +5,12 @@ import {
   DashboardData,
   getCurrentUser,
   getDashboard,
-  logoutCandidate,
 } from "./api";
-import brandMarkIcon from "./assets/dashboard/brand-mark.svg";
-import chevronDownIcon from "./assets/dashboard/chevron-down.svg";
 import copyLinkIcon from "./assets/dashboard/copy-link.svg";
 import shareIcon from "./assets/dashboard/share.svg";
 import solvedIcon from "./assets/dashboard/solved.svg";
-import userIcon from "./assets/dashboard/user.svg";
 import verifiedIcon from "./assets/dashboard/verified.svg";
+import { WorkspaceFooter, WorkspaceHeader } from "./WorkspaceChrome";
 
 const heatmapColors = ["#ebedf0", "#9be9a8", "#40c463", "#30a14e", "#216e39"];
 const difficultyColors: Record<string, string> = {
@@ -30,68 +27,6 @@ function addUtcDays(value: Date, days: number) {
 
 function utcDateKey(value: Date) {
   return value.toISOString().slice(0, 10);
-}
-
-function DashboardHeader({ user }: { user: AuthUser | null }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  async function signOut() {
-    await logoutCandidate().catch(() => undefined);
-    window.location.assign("/login");
-  }
-
-  return (
-    <header className="dashboard-header" data-node-id="2603:2024">
-      <div className="dashboard-header-inner">
-        <div className="dashboard-nav-group">
-          <a className="dashboard-brand" href="/dashboard" aria-label="Profligator dashboard">
-            <span className="dashboard-brand-mark" aria-hidden="true">
-              <img src={brandMarkIcon} alt="" />
-            </span>
-            <span>Profligator</span>
-          </a>
-          <span className="dashboard-nav-divider" aria-hidden="true" />
-          <nav className="dashboard-primary-nav" aria-label="Primary navigation">
-            <a className="active" href="/dashboard" aria-current="page">
-              Dashboard
-            </a>
-            <a href="/onboarding/profiles">Profiles</a>
-            <a href="#integrations">Integrations</a>
-            <a href="#team">Team</a>
-          </nav>
-        </div>
-
-        <div className="dashboard-account-area">
-          <a href="#documentation">Documentation</a>
-          <span className="dashboard-nav-divider" aria-hidden="true" />
-          <div className="dashboard-user-wrap">
-            <span className="dashboard-avatar" aria-hidden="true">
-              <img src={userIcon} alt="" />
-            </span>
-            <span className="dashboard-user-copy">
-              <strong>{user?.handle ?? "Candidate"}</strong>
-              <span>{user?.email ?? "Loading…"}</span>
-            </span>
-            <button
-              className="dashboard-user-menu-button"
-              type="button"
-              aria-label="Open user menu"
-              aria-expanded={menuOpen}
-              onClick={() => setMenuOpen((open) => !open)}
-            >
-              <img src={chevronDownIcon} alt="" />
-            </button>
-            {menuOpen && (
-              <div className="dashboard-user-menu">
-                <a href="/onboarding/profiles">Manage profiles</a>
-                <button type="button" onClick={signOut}>Sign out</button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </header>
-  );
 }
 
 const platformLabels: Record<string, string> = {
@@ -422,7 +357,7 @@ function DashboardPage() {
 
   return (
     <div className="dashboard-page" data-node-id="2603:1500">
-      <DashboardHeader user={user} />
+      <WorkspaceHeader user={user} activeTab="dashboard" />
 
       <main className="dashboard-main">
         <div className="dashboard-content">
@@ -492,17 +427,7 @@ function DashboardPage() {
         </div>
       </main>
 
-      <footer className="dashboard-footer" data-node-id="2603:2011">
-        <div className="dashboard-footer-inner">
-          <p>© 2026 Profligator Inc. All rights reserved.</p>
-          <nav aria-label="Legal and support links">
-            <a href="#privacy">Privacy</a>
-            <a href="#terms">Terms</a>
-            <a href="#status">Status</a>
-            <a href="#support">Contact Support</a>
-          </nav>
-        </div>
-      </footer>
+      <WorkspaceFooter />
     </div>
   );
 }
