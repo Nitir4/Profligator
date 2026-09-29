@@ -9,8 +9,11 @@ import helpIcon from "./assets/login/help.svg";
 import lockIcon from "./assets/login/lock.svg";
 import { loginCandidate, registerCandidate } from "./api";
 import DashboardPage from "./DashboardPage";
+<<<<<<< HEAD
 import ExtensionNotificationPage from "./ExtensionNotificationPage";
 import IntegrationsPage from "./IntegrationsPage";
+=======
+>>>>>>> parent of cdbf240 (feat(web): implement extension duplicate notification screen)
 import ProfileSetupPage from "./ProfileSetupPage";
 import SharingPage from "./SharingPage";
 import TeamPage from "./TeamPage";
@@ -37,12 +40,15 @@ function App() {
         ? "Connect coding profiles | Profligator"
         : path === "/dashboard"
           ? "Dashboard | Profligator"
+<<<<<<< HEAD
           : path === "/integrations"
             ? "Integrations | Profligator"
           : path === "/team"
             ? "Team | Profligator"
           : path === "/extension" || path === "/extension/duplicate-notification"
             ? "Duplicate problem detected | Profligator"
+=======
+>>>>>>> parent of cdbf240 (feat(web): implement extension duplicate notification screen)
           : path === "/settings/sharing"
             ? "Profile sharing | Profligator"
             : "Sign in | Profligator";
@@ -85,10 +91,6 @@ function App() {
 
   if (path === "/settings/sharing") {
     return <SharingPage />;
-  }
-
-  if (path === "/extension" || path === "/extension/duplicate-notification") {
-    return <ExtensionNotificationPage />;
   }
 
   return (
