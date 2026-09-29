@@ -12,6 +12,13 @@ export type PlatformProfile = {
   updated_at: string;
 };
 
+export type ConnectorDescriptor = {
+  platform: SupportedPlatform;
+  mode: "fixture" | "official_api";
+  live_data: boolean;
+  notice: string;
+};
+
 export type SyncRun = {
   id: string;
   platform_profile_id: string;
@@ -68,7 +75,7 @@ export type AuthSession = {
   access_expires_at: string;
 };
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000").replace(
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(
   /\/$/,
   "",
 );
@@ -158,6 +165,10 @@ export async function logoutCandidate(): Promise<void> {
 
 export function listPlatformProfiles(): Promise<PlatformProfile[]> {
   return apiRequest("/api/v1/platform-profiles");
+}
+
+export function listConnectors(): Promise<ConnectorDescriptor[]> {
+  return apiRequest("/api/v1/connectors");
 }
 
 export function checkPlatformProfile(
