@@ -6,10 +6,10 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "npm run dev --workspace @profligator/web",
+    "dev": "node scripts/dev.mjs",
     "build": "npm run build --workspace @profligator/web",
     "preview": "npm run preview --workspace @profligator/web",
-    "api:dev": "uv run --project apps/api uvicorn profligator_api.main:app --app-dir apps/api/src --reload",
+    "api:dev": "node scripts/dev.mjs --api-only",
     "api:test": "uv run --project apps/api --dev pytest -c apps/api/pyproject.toml apps/api/tests",
     "api:worker": "uv run --project apps/api rq worker --path apps/api/src --url redis://localhost:6379/0 profligator-syncs"
   }
