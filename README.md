@@ -9,6 +9,14 @@ The distinguishing feature is cross-platform duplicate detection. Profligator co
 
 When a candidate opens a problem that resembles one already solved elsewhere, a browser extension can notify them and link to the earlier attempt.
 
+## Run locally
+
+Install the web dependencies with `npm install` and the API dependencies with
+`uv sync --project apps/api --dev`. Then run `npm run dev` from the repository
+root. This starts the API and web app together. If port 8000 is occupied, the
+API uses another available port and the web proxy follows it. An existing
+`apps/api/.venv` also works when `uv` is unavailable on your `PATH`.
+
 This repository implements the product specified in the class [project report](../Group%20-%205%20.pdf). The report initially calls the concept **CodeFusion**, but the approved design, logo, GitHub repository, and later design section use **Profligator**; this implementation consistently uses Profligator.
 
 ## First-release scope
