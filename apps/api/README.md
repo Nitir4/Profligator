@@ -12,6 +12,10 @@ The first backend slice provides:
 
 ## Local development
 
+From the repository root, `npm run dev` starts the API and web app together
+and configures the web proxy for the API port. To run only the API, use
+`npm run api:dev`.
+
 ```bash
 uv sync --project apps/api --dev
 uv run --project apps/api uvicorn profligator_api.main:app --app-dir apps/api/src --reload
