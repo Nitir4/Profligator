@@ -33,7 +33,7 @@ def verify_password(password: str, encoded: str | None) -> bool:
     return password_hash.verify(password, encoded)
 
 
-def create_access_token(user_id: str, settings: Settings) -> tuple[str, datetime]:
+def create_access_token(user_id: str, settings: Settings, auth_version: int = 0) -> tuple[str, datetime]:
     now = datetime.now(UTC)
     expires_at = now + timedelta(minutes=settings.access_token_minutes)
     token = jwt.encode(
@@ -43,6 +43,7 @@ def create_access_token(user_id: str, settings: Settings) -> tuple[str, datetime
             "aud": settings.auth_audience,
             "type": "access",
             "jti": str(uuid4()),
+            "auth_version": auth_version,
             "iat": now,
             "exp": expires_at,
         },
@@ -52,7 +53,7 @@ def create_access_token(user_id: str, settings: Settings) -> tuple[str, datetime
     return token, expires_at
 
 
-def decode_access_token(token: str, settings: Settings) -> str:
+def decode_access_claims(token: str, settings: Settings) -> dict:
     try:
         payload = jwt.decode(
             token,
@@ -68,13 +69,19 @@ def decode_access_token(token: str, settings: Settings) -> str:
             detail="Authentication required",
             headers={"WWW-Authenticate": "Bearer"},
         ) from exc
-    if payload.get("type") != "access" or not isinstance(payload.get("sub"), str):
+    version = payload.get("auth_version", 0)
+    if (payload.get("type") != "access" or not isinstance(payload.get("sub"), str)
+            or type(version) is not int or version < 0):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication required",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    return payload["sub"]
+    return payload
+
+
+def decode_access_token(token: str, settings: Settings) -> str:
+    return decode_access_claims(token, settings)["sub"]
 
 
 def new_refresh_token() -> tuple[str, str]:
@@ -142,13 +149,21 @@ async def get_current_user(
             detail="Authentication required",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    user_id = decode_access_token(token, request.app.state.settings)
+    claims = decode_access_claims(token, request.app.state.settings)
     with request.app.state.database.session() as session:
-        user = Repository(session).get_user(user_id)
-        if user is None:
+        user = Repository(session).get_user(claims["sub"])
+        if user is None or user.auth_version != claims.get("auth_version", 0):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Authentication required",
                 headers={"WWW-Authenticate": "Bearer"},
             )
         return user
+
+
+async def get_candidate_user(
+    user: Annotated[User, Depends(get_current_user)],
+) -> User:
+    if user.role != "candidate":
+        raise HTTPException(status_code=403, detail="Candidate account required")
+    return user

@@ -5,12 +5,15 @@ from typing import Annotated
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+from fastapi.exception_handlers import request_validation_exception_handler
 from sqlalchemy.exc import IntegrityError
 
 from profligator_api import __version__
 from profligator_api.config import Settings, get_settings
 from profligator_api.connectors import ConnectorError, ConnectorRegistry
 from profligator_api.database import Database
+from profligator_api.connectors.metadata import DatabaseMetadataStore
 from profligator_api.jobs import SyncDispatchError, SyncDispatcher
 from profligator_api.models import User
 from profligator_api.repository import Repository
@@ -19,6 +22,7 @@ from profligator_api.schemas import (
     AuthRegister,
     AuthSessionResponse,
     ConnectorDescriptor,
+    ConnectorMode,
     DashboardResponse,
     HealthResponse,
     PlatformProfileCreate,
@@ -34,6 +38,7 @@ from profligator_api.security import (
     clear_auth_cookies,
     create_access_token,
     get_current_user,
+    get_candidate_user,
     hash_password,
     hash_refresh_token,
     new_refresh_token,
@@ -45,7 +50,7 @@ from profligator_api.security import (
 def create_app(settings: Settings | None = None) -> FastAPI:
     app_settings = settings or get_settings()
     database = Database(app_settings.database_url)
-    registry = ConnectorRegistry(app_settings)
+    registry = ConnectorRegistry(app_settings, metadata_store=DatabaseMetadataStore(database))
     sync_dispatcher = SyncDispatcher(app_settings)
 
     @asynccontextmanager
@@ -59,8 +64,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         title=app_settings.app_name,
         version=__version__,
         description=(
-            "Profile aggregation API. LeetCode and GeeksforGeeks operate from sanitized "
-            "fixtures until an approved provider integration is available."
+            "Profile aggregation API with public LeetCode/GFG collectors, the official "
+            "Codeforces API, explicit history coverage and optional offline fixtures."
         ),
         lifespan=lifespan,
     )
@@ -75,6 +80,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         allow_methods=["GET", "POST", "DELETE", "PUT"],
         allow_headers=["Authorization", "Content-Type"],
     )
+    from profligator_api.report_routes import create_report_router
+    app.include_router(create_report_router(database, app_settings))
+    from profligator_api.account_profile import create_account_profile_router
+    app.include_router(create_account_profile_router(database, app_settings))
+    from profligator_api.extension_auth import create_extension_router
+    app.include_router(create_extension_router(database, app_settings))
+    from profligator_api.extension_history import create_history_router
+    app.include_router(create_history_router(database, app_settings))
 
     @app.exception_handler(ConnectorError)
     async def connector_error_handler(_: Request, exc: ConnectorError) -> JSONResponse:
@@ -105,12 +118,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def create_session_response(
         response: Response, repository: Repository, user: User
     ) -> AuthSessionResponse:
-        access_token, access_expires_at = create_access_token(user.id, app_settings)
+        access_token, access_expires_at = create_access_token(user.id, app_settings, user.auth_version)
         refresh_token, refresh_hash = new_refresh_token()
         repository.create_refresh_session(
             user_id=user.id,
             token_hash=refresh_hash,
             expires_at=datetime.now(UTC) + timedelta(days=app_settings.refresh_token_days),
+            auth_version=user.auth_version,
         )
         set_auth_cookies(
             response,
@@ -122,6 +136,28 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             user=UserResponse.model_validate(user),
             access_expires_at=access_expires_at,
         )
+
+    from profligator_api.google_auth import GoogleOAuthClient, create_google_router
+    google = GoogleOAuthClient(app_settings)
+    app.state.google_oauth = google
+    app.include_router(create_google_router(database, app_settings, create_session_response, google))
+    from profligator_api.password_recovery import RecoveryMailer, create_recovery_router
+    mailer = RecoveryMailer(app_settings)
+    app.state.recovery_mailer = mailer
+    app.include_router(create_recovery_router(database, app_settings, mailer))
+    from profligator_api.verification import create_verification_router
+    verification_mailer = RecoveryMailer(app_settings.verification_mail_settings())
+    app.state.verification_mailer = verification_mailer
+    app.include_router(create_verification_router(database, app_settings, verification_mailer))
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_error(request: Request, error: RequestValidationError):
+        if request.url.path == "/api/v1/auth/reset-password":
+            # Validation errors must not echo reset credentials or passwords.
+            return JSONResponse(status_code=422, content={"detail": [
+                {key: item[key] for key in ("loc", "msg", "type")} for item in error.errors()
+            ]}, headers={"Cache-Control": "no-store"})
+        return await request_validation_exception_handler(request, error)
 
     @app.post(
         "/api/v1/auth/register",
@@ -143,6 +179,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     email=str(payload.email),
                     handle=payload.handle,
                     password_hash=hash_password(payload.password),
+                    role=payload.role.value,
                 )
                 return create_session_response(response, repository, user)
         except IntegrityError as exc:
@@ -187,7 +224,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             if user is None:
                 clear_auth_cookies(response, app_settings)
                 raise HTTPException(status_code=401, detail="Refresh session is invalid")
-            repository.revoke_refresh_session(refresh_hash)
+            if not repository.revoke_refresh_session(refresh_hash):
+                raise HTTPException(status_code=401, detail="Refresh session was already rotated")
             return create_session_response(response, repository, user)
 
     @app.post(
@@ -225,10 +263,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     async def check_profile(
         payload: ProfileCheckRequest,
-        _: Annotated[User, Depends(get_current_user)],
+        _: Annotated[User, Depends(get_candidate_user)],
     ) -> ProfileCheckResponse:
         connector = registry.get(payload.platform)
         profile = await connector.validate_handle(payload.handle_or_url)
+        if connector.descriptor.live_data:
+            profile = (await connector.fetch_profile(profile)).profile
         return ProfileCheckResponse(
             profile=profile,
             mode=connector.descriptor.mode,
@@ -244,7 +284,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     async def link_profile(
         payload: PlatformProfileCreate,
-        current_user: Annotated[User, Depends(get_current_user)],
+        current_user: Annotated[User, Depends(get_candidate_user)],
     ) -> PlatformProfileResponse:
         connector = registry.get(payload.platform)
         canonical = await connector.validate_handle(payload.handle_or_url)
@@ -263,7 +303,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         tags=["profiles"],
     )
     async def list_profiles(
-        current_user: Annotated[User, Depends(get_current_user)],
+        current_user: Annotated[User, Depends(get_candidate_user)],
     ) -> list[PlatformProfileResponse]:
         with database.session() as session:
             profiles = Repository(session).list_profiles(current_user.id)
@@ -276,7 +316,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     async def disconnect_profile(
         profile_id: str,
-        current_user: Annotated[User, Depends(get_current_user)],
+        current_user: Annotated[User, Depends(get_candidate_user)],
     ) -> Response:
         with database.session() as session:
             disconnected = Repository(session).disconnect_profile(profile_id, current_user.id)
@@ -292,14 +332,19 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     async def create_sync(
         payload: SyncCreate,
-        current_user: Annotated[User, Depends(get_current_user)],
+        current_user: Annotated[User, Depends(get_candidate_user)],
     ) -> SyncRunResponse:
         with database.session() as session:
             repository = Repository(session)
             saved_profile = repository.get_profile(payload.platform_profile_id, current_user.id)
             if saved_profile is None:
                 raise HTTPException(status_code=404, detail="Platform profile not found")
-            run = repository.start_sync(saved_profile.id)
+            run, claimed = repository.claim_sync(
+                saved_profile.id, app_settings.profile_sync_cooldown_seconds,
+                app_settings.sync_job_timeout_seconds,
+            )
+            if not claimed:
+                return SyncRunResponse.model_validate(run)
             run_id = run.id
         try:
             completed = await sync_dispatcher.dispatch(run_id)
@@ -331,7 +376,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     async def get_sync(
         sync_id: str,
-        current_user: Annotated[User, Depends(get_current_user)],
+        current_user: Annotated[User, Depends(get_candidate_user)],
     ) -> SyncRunResponse:
         with database.session() as session:
             run = Repository(session).get_sync_for_user(sync_id, current_user.id)
@@ -341,10 +386,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.get("/api/v1/dashboard", response_model=DashboardResponse, tags=["dashboard"])
     async def dashboard(
-        current_user: Annotated[User, Depends(get_current_user)],
+        current_user: Annotated[User, Depends(get_candidate_user)],
     ) -> DashboardResponse:
         with database.session() as session:
-            return Repository(session).dashboard(current_user.id)
+            return Repository(session).dashboard(current_user.id, leetcode_collect_contests=app_settings.leetcode_collect_contests,
+                                                  semantic_matching=app_settings.matching_backend != "disabled")
 
     return app
 

@@ -27,13 +27,13 @@ const platforms: {
   {
     key: "leetcode",
     label: "LeetCode",
-    description: "Coding practice preview",
+    description: "Public accepted problems and contest history",
     icon: leetCodeIcon,
   },
   {
     key: "geeksforgeeks",
     label: "GeeksforGeeks",
-    description: "Coding practice preview",
+    description: "Public solved problems",
     icon: geeksForGeeksIcon,
   },
 ];
@@ -111,7 +111,7 @@ function IntegrationsPage() {
               {platforms.map((platform) => {
                 const connector = connectors.find((item) => item.platform === platform.key);
                 const linked = profiles.filter((profile) => profile.platform === platform.key);
-                const live = connector?.live_data ?? platform.key === "codeforces";
+                const live = connector?.live_data ?? false;
                 return (
                   <article className="integration-row" key={platform.key}>
                     <span className="integration-platform-mark" aria-hidden="true">
@@ -122,7 +122,7 @@ function IntegrationsPage() {
                       <span>{platform.description}</span>
                     </div>
                     <span className={`integration-mode ${live ? "live" : "sample"}`}>
-                      {live ? "Live API" : "Sample data"}
+                      {connector ? (live ? "Public data" : "Sample data") : "Loading…"}
                     </span>
                     <div className="integration-profiles">
                       {linked.length ? linked.map((profile) => (
@@ -140,8 +140,7 @@ function IntegrationsPage() {
               })}
             </div>
             <p className="workspace-panel-footnote">
-              LeetCode and GeeksforGeeks use sample data while live collection is evaluated.
-              Codeforces uses its public API.
+              {connectors.map((connector) => connector.notice).join(" ")}
             </p>
           </section>
         </div>

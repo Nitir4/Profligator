@@ -105,7 +105,7 @@ async def test_sync_retries_transient_connector_failures(
     connector = RetryingConnector()
 
     class FakeRegistry:
-        def __init__(self, _: Settings) -> None:
+        def __init__(self, _: Settings, **kwargs) -> None:
             pass
 
         def get(self, _: Platform) -> RetryingConnector:

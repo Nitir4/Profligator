@@ -1,33 +1,30 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ApiError,
   AuthUser,
   DashboardData,
   getCurrentUser,
   getDashboard,
+  getSharing,
+  listPlatformProfiles,
+  startProfileSync,
+  waitForSync,
 } from "./api";
+import { ContestHistory, MatchingCoverage, PlatformCoverage, SolvedProblems } from "./ProfileDetails";
+import ActivityHeatmap from "./ActivityHeatmap";
 import copyLinkIcon from "./assets/dashboard/copy-link.svg";
 import shareIcon from "./assets/dashboard/share.svg";
 import solvedIcon from "./assets/dashboard/solved.svg";
 import verifiedIcon from "./assets/dashboard/verified.svg";
 import { WorkspaceFooter, WorkspaceHeader } from "./WorkspaceChrome";
+import ProfileAvatar from "./ProfileAvatar";
 
-const heatmapColors = ["#ebedf0", "#9be9a8", "#40c463", "#30a14e", "#216e39"];
 const difficultyColors: Record<string, string> = {
+  Fundamentals: "#6366f1",
   Easy: "#10b981",
   Medium: "#f59e0b",
   Hard: "#f43f5e",
 };
-
-function addUtcDays(value: Date, days: number) {
-  const next = new Date(value);
-  next.setUTCDate(next.getUTCDate() + days);
-  return next;
-}
-
-function utcDateKey(value: Date) {
-  return value.toISOString().slice(0, 10);
-}
 
 const platformLabels: Record<string, string> = {
   leetcode: "LeetCode",
@@ -37,7 +34,7 @@ const platformLabels: Record<string, string> = {
 
 function StatCards({ dashboard, loading }: { dashboard: DashboardData | null; loading: boolean }) {
   const total = dashboard?.total_problems_solved;
-  const unique = dashboard?.provisional_unique_problems;
+  const unique = dashboard?.unique_problems_solved;
   const uniqueRatio = total && unique !== undefined ? `${((unique / total) * 100).toFixed(1)}%` : "—";
 
   return (
@@ -45,13 +42,13 @@ function StatCards({ dashboard, loading }: { dashboard: DashboardData | null; lo
       <article className="dashboard-stat-card total-card" data-node-id="2603:1549">
         <div className="stat-content">
           <div className="stat-label-row">
-            <span>Total Problems Solved</span>
+            <span>Imported Solved Problems</span>
             <img src={solvedIcon} alt="" />
           </div>
           <strong className="stat-number">{loading ? "…" : (total ?? 0).toLocaleString()}</strong>
           <p>
-            Cumulative problems solved across all {dashboard?.connected_profiles ?? 0} connected
-            platforms.
+            Imported from {dashboard?.connected_profiles ?? 0} connected
+            {dashboard?.connected_profiles === 1 ? " profile" : " profiles"}.
           </p>
         </div>
         <div className="stat-platforms">
@@ -60,6 +57,7 @@ function StatCards({ dashboard, loading }: { dashboard: DashboardData | null; lo
               <span key={`${platform.platform}-${platform.profile_handle}`}>
                 {index > 0 && <i aria-hidden="true">•</i>}
                 {platformLabels[platform.platform]}: <strong>{platform.solved}</strong>
+                {platform.source_total_solved !== null && ` / ${platform.source_total_solved} reported`}
               </span>
             ))
           ) : (
@@ -76,8 +74,7 @@ function StatCards({ dashboard, loading }: { dashboard: DashboardData | null; lo
           </div>
           <strong className="stat-number">{loading ? "…" : (unique ?? 0).toLocaleString()}</strong>
           <p>
-            Deduplicated unique algorithmic problems, excluding identical challenges solved
-            across multiple platforms.
+            Imported problems after confirmed duplicates are removed.
           </p>
         </div>
         <div className="normalized-note">
@@ -89,149 +86,6 @@ function StatCards({ dashboard, loading }: { dashboard: DashboardData | null; lo
   );
 }
 
-function ActivityHeatmap({ dashboard }: { dashboard: DashboardData | null }) {
-  const [range, setRange] = useState("last-12-months");
-  const activity = dashboard?.activity;
-  const ranges = useMemo(() => {
-    const years = Array.from(
-      new Set((activity?.days ?? []).map((day) => day.date.slice(0, 4))),
-    ).sort((left, right) => right.localeCompare(left));
-    return [
-      { key: "last-12-months", label: "Last 12 Months" },
-      ...years.slice(0, 3).map((year) => ({ key: year, label: year })),
-    ];
-  }, [activity]);
-
-  const view = useMemo(() => {
-    const counts = new Map((activity?.days ?? []).map((day) => [day.date, day.count]));
-    const now = new Date();
-    const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-    const isYear = /^\d{4}$/.test(range);
-    const year = isYear ? Number(range) : today.getUTCFullYear();
-    const start = isYear
-      ? new Date(Date.UTC(year, 0, 1))
-      : addUtcDays(today, -364);
-    const end = isYear ? new Date(Date.UTC(year, 11, 31)) : today;
-    const mondayOffset = (start.getUTCDay() + 6) % 7;
-    const gridStart = addUtcDays(start, -mondayOffset);
-    const gridEnd = addUtcDays(end, 6 - ((end.getUTCDay() + 6) % 7));
-    const maximum = Math.max(
-      1,
-      ...Array.from(counts.entries())
-        .filter(([key]) => key >= utcDateKey(start) && key <= utcDateKey(end))
-        .map(([, count]) => count),
-    );
-    const weeks: Array<Array<{ date: string; count: number; level: number }>> = [];
-    for (let weekStart = gridStart; weekStart <= gridEnd; weekStart = addUtcDays(weekStart, 7)) {
-      const week = Array.from({ length: 7 }, (_, dayIndex) => {
-        const day = addUtcDays(weekStart, dayIndex);
-        const key = utcDateKey(day);
-        const inRange = day >= start && day <= end;
-        const count = inRange ? (counts.get(key) ?? 0) : 0;
-        return {
-          date: key,
-          count,
-          level: count === 0 ? 0 : Math.max(1, Math.ceil((count / maximum) * 4)),
-        };
-      });
-      weeks.push(week);
-    }
-    const monthFormatter = new Intl.DateTimeFormat("en", {
-      month: "short",
-      timeZone: "UTC",
-    });
-    const monthStart = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), 1));
-    const months = Array.from({ length: 12 }, (_, index) =>
-      monthFormatter.format(new Date(Date.UTC(monthStart.getUTCFullYear(), monthStart.getUTCMonth() + index, 1))),
-    );
-    const total = (activity?.days ?? []).reduce(
-      (sum, day) =>
-        day.date >= utcDateKey(start) && day.date <= utcDateKey(end) ? sum + day.count : sum,
-      0,
-    );
-    return { weeks, months, total };
-  }, [activity, range]);
-
-  return (
-    <section className="activity-card" aria-labelledby="activity-title" data-node-id="2603:1590">
-      <div className="activity-header">
-        <div>
-          <h2 id="activity-title">Coding Activity</h2>
-          <p>{view.total.toLocaleString()} solved records in the selected period</p>
-        </div>
-        <div className="activity-range" aria-label="Activity period">
-          {ranges.map((item) => (
-            <button
-              className={range === item.key ? "active" : ""}
-              key={item.key}
-              type="button"
-              aria-pressed={range === item.key}
-              onClick={() => setRange(item.key)}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div
-        className="heatmap-scroll"
-        role="img"
-        aria-label={`${view.total} solved records for ${ranges.find((item) => item.key === range)?.label ?? range}`}
-      >
-        <div className="heatmap-canvas">
-          <div className="month-labels" aria-hidden="true">
-            {view.months.map((month, index) => (
-              <span key={`${month}-${index}`}>{month}</span>
-            ))}
-          </div>
-          <div className="heatmap-grid-wrap">
-            <div className="weekday-labels" aria-hidden="true">
-              <span>Mon</span>
-              <span>Wed</span>
-              <span>Fri</span>
-            </div>
-            <div
-              className="heatmap-grid"
-              aria-hidden="true"
-              style={{ gridTemplateColumns: `repeat(${view.weeks.length}, 11px)` }}
-            >
-              {view.weeks.map((week) => (
-                <span className="heatmap-week" key={week[0].date}>
-                  {week.map((day, dayIndex) => (
-                    <i
-                      key={day.date}
-                      title={`${day.date}: ${day.count}`}
-                      style={{
-                        top: `${dayIndex * 5.8571429}px`,
-                        backgroundColor: heatmapColors[day.level],
-                      }}
-                    />
-                  ))}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="heatmap-footer">
-        <div>
-          <span>Current streak: <strong>{activity?.current_streak ?? 0} days</strong></span>
-          <i aria-hidden="true">•</i>
-          <span>Longest streak: <strong>{activity?.longest_streak ?? 0} days</strong></span>
-        </div>
-        <div className="heatmap-legend" aria-label="Less to more activity">
-          <span>Less</span>
-          {heatmapColors.map((color) => (
-            <i key={color} style={{ backgroundColor: color }} />
-          ))}
-          <span>More</span>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 function BreakdownCards({ dashboard }: { dashboard: DashboardData | null }) {
   const topics = dashboard?.topics.items ?? [];
@@ -245,7 +99,7 @@ function BreakdownCards({ dashboard }: { dashboard: DashboardData | null }) {
       <article className="breakdown-card topic-card" data-node-id="2603:1912">
         <div className="breakdown-heading">
           <h2>Topic Breakdown</h2>
-          <p>Distribution of provider-supplied topic assignments</p>
+          <p>Topics in your imported history</p>
         </div>
         <div className="topic-list">
           {topics.length ? (
@@ -300,7 +154,9 @@ function BreakdownCards({ dashboard }: { dashboard: DashboardData | null }) {
         </div>
         <div className="difficulty-summary">
           <span>
-            {dashboard?.difficulties.unrated_records
+            {!dashboard?.total_problems_solved
+              ? "No rated questions yet"
+              : dashboard.difficulties.unrated_records
               ? `${dashboard.difficulties.unrated_records} unrated records excluded`
               : "All synchronized records are rated"}
           </span>
@@ -317,6 +173,8 @@ function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
+  const [revision, setRevision] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -331,6 +189,30 @@ function DashboardPage() {
         if (!active) return;
         setDashboard(data);
         setError(null);
+        // Show saved data immediately, then refresh the owner's accounts.
+        // The API reuses current jobs and enforces the per-profile cooldown.
+        void listPlatformProfiles().then(async (profiles) => {
+          if (!active || !profiles.length) return;
+          setSyncMessage("Checking connected profiles for updates…");
+          const results = [];
+          for (const profile of profiles) {
+            if (!active) return;
+            try {
+              await waitForSync(await startProfileSync(profile.id));
+              results.push(true);
+            } catch {
+              results.push(false);
+            }
+          }
+          if (!active) return;
+          const latest = await getDashboard();
+          if (!active) return;
+          setDashboard(latest);
+          setRevision((value) => value + 1);
+          setSyncMessage(results.every(Boolean) ? "Profile check complete. Recently synced profiles use saved data." : "Some profiles could not refresh. Showing their last saved data.");
+        }).catch(() => {
+          if (active) setSyncMessage("Could not check for updates. Showing saved profile data.");
+        });
       })
       .catch((requestError: ApiError) => {
         if (requestError.status === 401) {
@@ -347,9 +229,15 @@ function DashboardPage() {
 
   async function copyProfileLink() {
     try {
-      await navigator.clipboard.writeText("https://profligator.com/p/alex_dev96");
+      const sharing = await getSharing();
+      if (!sharing.enabled || !sharing.shareable_link) {
+        window.location.assign("/settings/sharing");
+        return;
+      }
+      await navigator.clipboard.writeText(sharing.shareable_link);
     } catch {
-      // The visual confirmation still gives useful feedback in restricted preview contexts.
+      setError("Could not copy the profile link.");
+      return;
     }
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1500);
@@ -369,9 +257,12 @@ function DashboardPage() {
                 <span>Overview</span>
               </div>
               <div className="dashboard-name-row">
-                <h1>{user?.handle ?? "Candidate"}</h1>
+                <ProfileAvatar profile={user} className="dashboard-profile-photo" />
+                <h1>{user?.display_name || user?.handle || "Candidate"}</h1>
                 <span>Candidate Profile</span>
               </div>
+              {user?.display_name && <p className="profile-identity-handle">@{user.handle}</p>}
+              {user?.bio && <p className="profile-identity-bio">{user.bio}</p>}
               <div className="connected-pills" aria-label="Connected profiles">
                 {dashboard?.platforms.map((profile) => (
                   <span
@@ -413,17 +304,18 @@ function DashboardPage() {
           {dashboard?.data_state === "partial" && (
             <div className="dashboard-data-notice" role="status">
               <strong>Some analytics are incomplete.</strong>
-              <span>{dashboard.partial_reasons.join(" ")}</span>
-              {dashboard.last_successful_sync && (
-                <small>
-                  Latest successful sync: {new Date(dashboard.last_successful_sync).toLocaleString()}
-                </small>
-              )}
+              <span>See the status and next steps for each connected platform below.</span>
+              <a href="#coverage-title">View affected profiles</a>
             </div>
           )}
           <StatCards dashboard={dashboard} loading={loading} />
+          {syncMessage && <p className="profile-sync-message" role="status">{syncMessage}</p>}
+          {dashboard && <PlatformCoverage dashboard={dashboard} />}
+          {dashboard && <MatchingCoverage dashboard={dashboard} />}
           <ActivityHeatmap dashboard={dashboard} />
           <BreakdownCards dashboard={dashboard} />
+          {dashboard && <ContestHistory dashboard={dashboard} />}
+          {dashboard && <SolvedProblems revision={revision} />}
         </div>
       </main>
 

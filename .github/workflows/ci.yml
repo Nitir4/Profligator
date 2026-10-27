@@ -1,0 +1,142 @@
+name: CI
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  application:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PROFLIGATOR_MATCHING_BACKEND: disabled
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          version: '0.12.22'
+      - run: uv sync --project apps/api --frozen --dev
+      - run: npm ci
+      - name: API tests
+        run: apps/api/.venv/bin/python -m pytest -q apps/api/tests --junitxml=artifacts/api.xml
+      - run: npm run extension:test
+      - run: npm run extension:build
+      - run: npm run build
+      - name: Install browser dependencies
+        run: apps/api/.venv/bin/python -m playwright install --with-deps chromium
+      - name: Complete frontend acceptance
+        run: npm run browser:test -- --output-dir artifacts/browser
+      - name: Password recovery browser and local SMTP acceptance
+        run: apps/api/.venv/bin/python scripts/verify_password_recovery.py --output-dir artifacts/recovery
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: application-verification
+          path: artifacts/
+          retention-days: 14
+
+  containers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          version: '0.12.22'
+      - run: uv sync --project apps/api --frozen --no-dev
+      - name: Prepare isolated staging configuration
+        run: |
+          mkdir -p artifacts/containers
+          python - <<'PY'
+          from pathlib import Path
+          import secrets
+          config = {
+              'PROFLIGATOR_POSTGRES_PASSWORD': secrets.token_hex(24),
+              'PROFLIGATOR_AUTH_SECRET_KEY': secrets.token_hex(32),
+              'PROFLIGATOR_PUBLIC_WEB_URL': 'http://localhost:18080',
+              'PROFLIGATOR_WEB_PORT': '18080',
+              'PROFLIGATOR_ENVIRONMENT': 'development',
+              'PROFLIGATOR_AUTH_COOKIE_SECURE': 'false',
+              'PROFLIGATOR_LEETCODE_CONNECTOR': 'fixture',
+              'PROFLIGATOR_GEEKSFORGEEKS_CONNECTOR': 'fixture',
+              'PROFLIGATOR_SCRAPER_STATEMENT_LIMIT': '0',
+          }
+          path = Path('/tmp/profligator-ci.env')
+          path.write_text(''.join(f'{key}={value}\n' for key, value in config.items()))
+          path.chmod(0o600)
+          PY
+      - name: Build and start complete stack
+        run: |
+          docker compose --env-file /tmp/profligator-ci.env -f infra/compose.production.yaml -p profligator-ci build api web
+          docker compose --env-file /tmp/profligator-ci.env -f infra/compose.production.yaml -p profligator-ci up -d --wait
+      - name: HTTP deployment acceptance
+        run: apps/api/.venv/bin/python scripts/verify_deployment.py --origin http://127.0.0.1:18080 --output artifacts/containers/results.json
+      - name: Save logs and clean isolated services
+        if: always()
+        run: |
+          if test -f /tmp/profligator-ci.env; then
+            docker compose --env-file /tmp/profligator-ci.env -f infra/compose.production.yaml -p profligator-ci logs --no-color > artifacts/containers/services.log
+            docker compose --env-file /tmp/profligator-ci.env -f infra/compose.production.yaml -p profligator-ci down --volumes
+          fi
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: container-verification
+          path: artifacts/
+          retention-days: 14
+
+  infrastructure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: profligator_acceptance
+          POSTGRES_USER: profligator
+          POSTGRES_PASSWORD: acceptance-only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U profligator -d profligator_acceptance"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      PROFLIGATOR_TEST_DATABASE_URL: postgresql+psycopg://profligator:acceptance-only@localhost:5432/profligator_acceptance
+      PROFLIGATOR_TEST_REDIS_URL: redis://localhost:6379/15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          version: '0.12.22'
+      - run: uv sync --project apps/api --frozen --dev
+      - name: PostgreSQL migrations and real RQ jobs
+        run: apps/api/.venv/bin/python scripts/verify_infrastructure.py --output-dir artifacts/infrastructure
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: infrastructure-verification
+          path: artifacts/
+          retention-days: 14
