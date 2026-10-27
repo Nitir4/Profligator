@@ -4,7 +4,7 @@ Implemented on **3 October 2026**. This phase follows the user's order: extensio
 
 ## Visual source
 
-The popup and notification use the original [Profligator Figma frame](https://www.figma.com/) and report Figure 11.10. The notification card is node `2603:1342`: white surface, slate text, `#4f46e5` primary actions, `#f8fafc` inset cards, `#e2e8f0` borders and the indigo accent gradient. Original exported icons and local Inter fonts are packaged for both browsers. Notification details come from the actual previous attempt; absent dates and similarity percentages are not filled with the design's sample values.
+The popup and notification use the original Profligator design reference (maintained privately) and report Figure 11.10. The notification card is node `2603:1342`: white surface, slate text, `#4f46e5` primary actions, `#f8fafc` inset cards, `#e2e8f0` borders and the indigo accent gradient. Original exported icons and local Inter fonts are packaged for both browsers. Notification details come from the actual previous attempt; absent dates and similarity percentages are not filled with the design's sample values.
 
 On 7 October the palette correction passed extension tests/build and installed Chromium acceptance with controlled platform pages. The dedicated real-account browser popup was also reloaded and checked for white background, indigo buttons, Inter and the original loaded logo. [Recorded design verification](verification/extension-design-2026-10-07.json).
 
