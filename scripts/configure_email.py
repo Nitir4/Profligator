@@ -26,8 +26,9 @@ def main():
         updates["PROFLIGATOR_VERIFICATION_EMAIL_BACKEND"] = "smtp"
     for label, prefix in senders:
         print(f"{label} sender")
-        default = "reset@example.com" if prefix == "SMTP" else "verification@example.com"
-        email = input(f"Gmail address [{default}]: ").strip() or default
+        email = input("Sender Gmail address: ").strip()
+        if not email:
+            raise SystemExit("A sender address is required. No changes made.")
         password = getpass("Gmail app password (hidden): ").replace(" ", "")
         if not email or not password or any(c in email + password for c in '\r\n\x00'):
             raise SystemExit("A sender address and app password are required. No changes made.")

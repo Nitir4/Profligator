@@ -67,7 +67,7 @@ def name(payload:dict):names[payload['platform']]=payload['name'];return {{'ok':
             for path,title in [('/privacy','Privacy'),('/terms','Terms of use'),('/status','Service status'),('/support','Contact support'),('/documentation','Getting started')]:
                 await page.goto(origin+path)
                 await page.get_by_role('heading',name=title,exact=True).wait_for()
-                assert await page.locator('a[href="mailto:support@example.com"]').count()>0
+                assert await page.get_by_role('link', name='the project issue tracker').count()>0
                 await page.set_viewport_size({'width':390,'height':844})
                 assert await page.evaluate('document.documentElement.scrollWidth <= innerWidth+1')
                 await page.screenshot(path=str(output/(path[1:]+'-mobile.png')),full_page=True)

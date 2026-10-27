@@ -2,7 +2,7 @@
 
 Profligator brings coding practice from LeetCode, GeeksforGeeks and Codeforces into one profile. It shows imported solves, groups confirmed duplicates across platforms, and lets candidates share a read-only view of their progress.
 
-**Live project preview:** [profligator.example.com](https://profligator.example.com)
+Deployment origins and operator contact details are configured privately; the public repository uses example domains only.
 
 ## What you can do
 
@@ -59,12 +59,12 @@ The current schema includes migration `20261027_0013` for editable account profi
 
 ## Optional services and private configuration
 
-Keep credentials in ignored environment files or host-managed settings. The examples contain placeholders only.
+Keep credentials, deployment origins and operator email addresses in ignored environment files or host-managed settings. Public examples use reserved example domains and contain no actual sender identities. Run `python3 scripts/check_public_privacy.py --history` before publishing; an ignored `--private-terms-file` can add operator-specific checks.
 
 | Feature | Configuration and guide |
 | --- | --- |
 | PostgreSQL, Redis, sync worker/scheduler | [API environment example](apps/api/.env.example) and [API guide](apps/api/README.md) |
-| Google sign-in | [OAuth setup](docs/google-sign-in.md); hosted callback: `https://profligator.example.com/api/v1/auth/google/callback` |
+| Google sign-in | [OAuth setup](docs/google-sign-in.md); example callback: `https://profligator.example.com/api/v1/auth/google/callback` |
 | Password reset and email verification | [SMTP/recovery setup](docs/password-recovery.md); use separate recovery and verification sender settings |
 | Semantic matching | [Groq configuration/evaluation](docs/groq-matching.md), or the API's Ollama settings; exact matching works with matching disabled |
 | HTTPS/container deployment | [Deployment guide](docs/deployment.md) and [production environment example](infra/.env.production.example) |
@@ -73,7 +73,7 @@ The browser and extension call Profligator's API. Google client secrets, SMTP ap
 
 ## Browser extension
 
-On the hosted site, open **Account settings → Browser extension**, or [/extension/connect](https://profligator.example.com/extension/connect), for downloads and connection controls.
+On your hosted instance, open **Account settings → Browser extension**, or the `/extension/connect` route, for downloads and connection controls.
 
 For a local build:
 
@@ -129,6 +129,7 @@ npm run extension:test
 npm run extension:build
 npm run build
 npm audit
+python3 scripts/check_public_privacy.py
 ```
 
 For browser acceptance, install Chromium and run:
@@ -156,4 +157,4 @@ The GitHub workflow definition is included for review, but **GitHub Actions rema
 
 Deployment, navigation pages, account-email/profile ownership verification, persistent login and profile editing are implemented. The hosted stack has daily database backups and service startup on boot. See [remaining acceptance work](docs/remaining-work.md), [account profile editing](docs/account-profile.md), and [architecture](docs/backend-design.md) for details.
 
-Support: [support@example.com](mailto:support@example.com).
+For general support, use [the project issue tracker](https://github.com/Nitir4/Profligator/issues). Keep personal account details out of public issues.

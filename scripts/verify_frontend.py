@@ -254,6 +254,18 @@ app = create_app(settings)
             await owner_page.get_by_role("heading", name="Matching coverage").wait_for()
             await owner_page.get_by_text("1 of 2 imported questions have text", exact=False).wait_for()
             await check_breakdown_layout(owner_page, output, "partial")
+            assert await owner_page.get_by_label('Activity source', exact=True).input_value() == 'all'
+            await owner_page.get_by_label('Activity period', exact=True).select_option('2025')
+            await owner_page.get_by_role('img', name='2 activity events · reported dates', exact=True).wait_for()
+            assert await owner_page.locator('rect[data-date="2025-01-01"]').get_attribute('data-count') == '2'
+            for width in (1280, 390):
+                await owner_page.set_viewport_size({'width': width, 'height': 900})
+                assert await owner_page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1')
+                await owner_page.screenshot(path=str(output / f'all-activity-{width}.png'), full_page=True)
+            await owner_page.set_viewport_size({'width': 1280, 'height': 900})
+            await owner_page.get_by_label('Activity source', exact=True).select_option('utc')
+            await owner_page.get_by_label('Activity period', exact=True).select_option('2025')
+            assert await owner_page.locator('rect[data-date="2025-01-01"]').get_attribute('data-count') == '1'
             await owner_page.get_by_label('Activity source', exact=True).select_option('geeksforgeeks:public_user')
             await owner_page.get_by_label('Activity period', exact=True).select_option('2025')
             await owner_page.get_by_role('img', name='1 dated solves · platform time · timezone unspecified', exact=True).wait_for()
@@ -361,7 +373,7 @@ app = create_app(settings)
         result = {"passed": True, "data": "isolated database, real application API and offline LC/GFG fixtures; no Google or signed-in platform acceptance",
             "checks": ["UI registration", "UI profile validation/linking and actual synchronization", "five imported solved records",
             "terms brand preserves signed-in user", "login page restores candidate/recruiter workspace", "real browser profile restart restores30-day refresh session without access cookie", "refresh rotation and logout prevent automatic re-entry",
-            "styled account/sharing settings desktop/mobile", "email control opens account menu on all tested signed-in pages", "source-local activity shown separately from UTC", "solved pagination 10/10/3 with next/previous",
+            "styled account/sharing settings desktop/mobile", "email control opens account menu on all tested signed-in pages", "default all activity includes GFG and sums shared dates", "UTC and source-local activity filters retain original counts", "solved pagination 10/10/3 with next/previous",
             "unsupported platforms cannot be selected", "navigation precedes profile synchronization", "invalid replacement preserves saved profiles and retry keeps canonical IDs", "onboarding logo opens dashboard and preserves authenticated user",
             "four-row difficulty geometry on empty/populated dashboards at four widths", "one/three/five account row geometry at four widths", "expandable coverage notes",
             "solved-question search", "UI sharing and anonymous public view/revocation", "logout/login persists linked accounts",

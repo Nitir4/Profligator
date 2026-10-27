@@ -10,13 +10,24 @@ function addDays(value: Date, days: number) {
 
 export default function ActivityHeatmap({ dashboard }: { dashboard: DashboardData | null }) {
   const [range, setRange] = useState("last-12-months");
-  const [source, setSource] = useState("utc");
+  const [source, setSource] = useState("all");
   const activity = dashboard?.activity;
   const calendars = activity?.source_calendars ?? [];
   const local = calendars.find((item) => `${item.platform}:${item.profile_handle}` === source);
-  const days = local?.days ?? activity?.days ?? [];
-  const countLabel = local ? "dated solves" : activity?.count_label ?? "dated solved records";
-  const clockLabel = local ? "platform time · timezone unspecified" : "UTC";
+  const combinedDays = useMemo(() => {
+    const counts = new Map<string, number>();
+    // Source calendars contain only solves without UTC timestamps. Add their
+    // reported dates for display without converting them or changing UTC totals.
+    for (const series of [activity?.days ?? [], ...calendars.map((item) => item.days)]) {
+      for (const day of series) counts.set(day.date, (counts.get(day.date) ?? 0) + day.count);
+    }
+    return [...counts].sort(([left], [right]) => left.localeCompare(right))
+      .map(([date, count]) => ({ date, count }));
+  }, [activity?.days, calendars]);
+  const combined = source === "all" && calendars.length > 0;
+  const days = combined ? combinedDays : local?.days ?? activity?.days ?? [];
+  const countLabel = combined ? "activity events" : local ? "dated solves" : activity?.count_label ?? "dated solved records";
+  const clockLabel = combined ? "reported dates" : local ? "platform time · timezone unspecified" : "UTC";
   const ranges = useMemo(() => [
     { key: "last-12-months", label: "Last 12 months" },
     ...Array.from(new Set(days.map((day) => day.date.slice(0, 4))))
@@ -77,6 +88,7 @@ export default function ActivityHeatmap({ dashboard }: { dashboard: DashboardDat
           const selected = calendars.find((item) => `${item.platform}:${item.profile_handle}` === value);
           setRange(selected?.days.at(-1)?.date.slice(0, 4) ?? "last-12-months");
         }}>
+          <option value="all">All activity</option>
           <option value="utc">UTC activity</option>
           {calendars.map((item) => <option key={`${item.platform}:${item.profile_handle}`} value={`${item.platform}:${item.profile_handle}`}>{platformNames[item.platform]} @{item.profile_handle} · source dates</option>)}
         </select>}
@@ -103,7 +115,7 @@ export default function ActivityHeatmap({ dashboard }: { dashboard: DashboardDat
       <div className="heatmap-legend" aria-label="Less to more activity"><span>Less</span>{colors.map((color) => <i key={color} style={{ backgroundColor: color }} />)}<span>More</span></div>
     </div>
     <details className="coverage-details"><summary>Activity sources and missing dates</summary>
-      <p>{local ? "These solved-question dates use the platform's clock. They are shown separately because its timezone is unknown." : "UTC activity combines saved public submission calendars with dated solves where a calendar is unavailable. It is not a count of unique solved questions."}</p>
+      <p>{combined ? "All activity includes UTC submissions and dated solves, plus platform-local solves such as GeeksforGeeks. Dates and streaks use each source's reported calendar date; unknown timezones are not converted to UTC. Activity events are not a count of unique solved questions." : local ? "These solved-question dates use the platform's clock. Its timezone is unknown." : "UTC activity combines saved public submission calendars with dated solves where a calendar is unavailable. It is not a count of unique solved questions."}</p>
       <ul className="activity-coverage">{dashboard?.platforms.map((profile) => <li key={`${profile.platform}:${profile.profile_handle}`}>
         <strong>{platformNames[profile.platform]}</strong>: {profile.latest_sync_status === "failed" ? "Latest sync failed; showing any saved activity." : profile.activity_years.length ? `Saved calendar years: ${profile.activity_years.join(", ")}.` : profile.questions_with_utc_dates ? `${profile.questions_with_utc_dates} solves have UTC dates.` : "No UTC activity dates available."}
         {profile.questions_with_source_times > 0 && ` ${profile.questions_with_source_times} solves have platform-local dates; choose their source above.`}

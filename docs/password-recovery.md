@@ -51,8 +51,8 @@ The backend suite passed 184 tests, with an additional empty-SMTP-configuration 
 
 ## Live reset-mail check — 13 October 2026
 
-The reset sender `reset@example.com` is now configured in the ignored backend `.env`, with owner-only permissions. Gmail authentication passed over verified STARTTLS. The actual forgot-password route returned HTTP 202 for the authorized existing account, and Gmail accepted its reset message. Mailbox receipt and completion of the reset have not been confirmed; the test did not change the account password. The emailed link points to `http://localhost:5173` and expires after 15 minutes. The local API health endpoint and forgot-password page returned HTTP 200.
+The reset sender configured reset address is stored in the ignored backend `.env`, with owner-only permissions. Gmail authentication passed over verified STARTTLS. The actual forgot-password route returned HTTP 202 for the authorized existing account, and Gmail accepted its reset message. Mailbox receipt and completion of the reset have not been confirmed; the test did not change the account password. The emailed link points to `http://localhost:5173` and expires after 15 minutes. The local API health endpoint and forgot-password page returned HTTP 200.
 
-The existing SQLite database was backed up before applying the pending migrations through `20261013_0012`. Non-secret delivery evidence is in [reset-smtp-2026-10-13.json](verification/reset-smtp-2026-10-13.json).
+The existing SQLite database was backed up before applying the pending migrations through `20261013_0012`. Delivery evidence is retained privately; no actual sender identity is included in the public repository.
 
 The separate verification sender remains disabled while the user resolves Google's identity-verification block for that account. Google's [sensitive-action guidance](https://support.google.com/accounts/answer/7162782) describes verification methods and possible seven-day restrictions; the screenshot alone does not establish the specific cause.

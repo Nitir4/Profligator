@@ -7,7 +7,7 @@ export const informationTitles: Record<string, string> = {
   "/status": "Service status", "/support": "Contact support",
 };
 
-const contact = <a href="mailto:support@example.com">support@example.com</a>;
+const contact = <a href="https://github.com/Nitir4/Profligator/issues" target="_blank" rel="noopener noreferrer">the project issue tracker</a>;
 
 export default function InformationPage({ path }: { path: string }) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -35,30 +35,30 @@ export default function InformationPage({ path }: { path: string }) {
         </ol>
         <h2>Share with care</h2><p>Enable sharing in <a href="/settings/sharing">Sharing settings</a>, then copy your link. Anyone with an active link can view the shared profile. Turn sharing off to revoke access.</p>
         <h2>Understand the results</h2><p>Dates, statements and attempt links depend on the source. A missing duplicate alert does not prove a question is new. Semantic matching depends on configuration, coverage and provider availability.</p>
-        <p>Forgot your password? <a href="/forgot-password">Request a reset link</a>. For help, email {contact}.</p>
+        <p>Forgot your password? <a href="/forgot-password">Request a reset link</a>. For help, use {contact}.</p>
       </>}
       {path === "/privacy" && <>
         <p className="information-notice">Draft privacy notice for the project preview. Last updated 13 October 2026.</p>
         <h2>Information used by the app</h2><p>Profligator stores account details, a password hash when password sign-in is used, linked coding handles, available coding activity, sync results and matching decisions. Google sign-in stores the identity needed to connect your account. Authentication uses cookies; connected extensions use separately revocable sessions.</p>
         <h2>Collection and matching</h2><p>Public collectors request data from the coding platforms you link. Owner-authorized extension imports can add available solved history and public problem text. When hosted semantic matching is enabled, question titles, statements and topics are sent to the configured model provider for comparison.</p>
         <h2>Email and sharing</h2><p>Verification and password-reset emails are sent through configured mail providers. Sharing is opt-in: an active link exposes the coding profile to anyone who has it. Revocation stops future access through that link, but cannot erase copies someone already saved.</p>
-        <h2>Your choices</h2><p>You can disconnect coding profiles, revoke browser connections and disable sharing in the app. For account-data questions or a deletion request, contact {contact}. Deletion requests currently require manual handling.</p>
+        <h2>Your choices</h2><p>You can disconnect coding profiles, revoke browser connections and disable sharing in the app. For general account-data questions, use {contact}. Do not post personal account details in a public issue. Deletion requests require a private channel arranged with the project maintainers.</p>
       </>}
       {path === "/terms" && <>
         <p className="information-notice">Draft terms for the project preview. Last updated 13 October 2026.</p>
         <h2>Using Profligator</h2><p>Use accounts and coding profiles you are authorized to manage. Do not impersonate another person, submit false ownership evidence, abuse collection endpoints, or attempt to access another user's private history.</p>
         <h2>Data and results</h2><p>Coding platforms control the availability of their data. Imported history may be incomplete, and duplicate detection can miss matches or identify a pair incorrectly. Review the source evidence before using a profile or matching result to make a decision.</p>
         <h2>Sharing and third-party services</h2><p>You decide whether to share your profile and whom to give the link to. Coding platforms, Google sign-in, email providers and model providers have their own terms. Profligator is an independent project and does not represent those platforms.</p>
-        <h2>Preview availability</h2><p>This preview may change or become unavailable. No uptime or completeness guarantee is offered. Questions about these draft terms can be sent to {contact}.</p>
+        <h2>Preview availability</h2><p>This preview may change or become unavailable. No uptime or completeness guarantee is offered. Questions about these draft terms can be raised in {contact}.</p>
       </>}
       {path === "/status" && <>
         <p className="information-notice">This is a placeholder status page. Automated service monitoring is not connected.</p>
         <p>There is no verified uptime or incident feed to show yet. This page does not establish the health of the API, email delivery, collectors, sync workers or matching provider.</p>
-        <p>If an operation fails, keep the error message and time of the failure and contact {contact}. Avoid sending passwords, reset links or access tokens.</p>
+        <p>If an operation fails, keep the error message and time of the failure and use {contact}. Avoid posting personal details, passwords, reset links or access tokens.</p>
       </>}
       {path === "/support" && <>
-        <p>For help with sign-in, profile imports, sharing or the browser extension, email {contact}.</p>
-        <h2>What to include</h2><p>Describe what you expected, what happened, your browser and the affected coding platform. Include the error message and approximate time if available. Never send passwords, SMTP credentials, authentication tokens or reset links.</p>
+        <p>For help with sign-in, profile imports, sharing or the browser extension, use {contact}.</p>
+        <h2>What to include</h2><p>Describe what you expected, what happened, your browser and the affected coding platform. Include the error message and approximate time if available. Public issues are visible to others; do not include personal account details, passwords, SMTP credentials, authentication tokens or reset links.</p>
         <p>Support is handled manually; no response-time commitment is currently offered.</p>
       </>}
     </article></main><WorkspaceFooter />
