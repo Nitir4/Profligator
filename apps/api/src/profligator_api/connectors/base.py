@@ -1,12 +1,15 @@
 from abc import ABC, abstractmethod
 from hashlib import sha256
+from datetime import datetime
 import json
 
 from profligator_api.schemas import (
     CanonicalProfile,
+    CalendarCollection,
     ConnectorDescriptor,
     ConnectorPage,
     ProfileSnapshot,
+    NormalizedRecord,
 )
 
 
@@ -25,6 +28,11 @@ def payload_checksum(payload: object) -> str:
 
 class Connector(ABC):
     descriptor: ConnectorDescriptor
+    supports_problem_metadata = False
+
+    async def enrich_records(self, records: list[NormalizedRecord], limit: int) -> list[NormalizedRecord]:
+        """Return metadata changes for known solves, without collecting new solve evidence."""
+        return []
 
     @abstractmethod
     async def validate_handle(self, handle_or_url: str) -> CanonicalProfile:
@@ -44,3 +52,8 @@ class Connector(ABC):
         self, profile: CanonicalProfile, cursor: str | None = None
     ) -> ConnectorPage:
         return ConnectorPage(records=[])
+
+    async def fetch_activity(
+        self, profile: CanonicalProfile, known_years: dict[int, datetime] | None = None,
+    ) -> CalendarCollection:
+        return CalendarCollection()

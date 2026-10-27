@@ -1,0 +1,107 @@
+name: profligator
+
+x-backend: &backend
+  image: profligator-api:local
+  build:
+    context: ..
+    dockerfile: infra/api.Dockerfile
+  restart: unless-stopped
+  environment: &backend-env
+    PROFLIGATOR_ENVIRONMENT: ${PROFLIGATOR_ENVIRONMENT:-production}
+    PROFLIGATOR_DATABASE_URL: postgresql+psycopg://profligator:${PROFLIGATOR_POSTGRES_PASSWORD:?Set PROFLIGATOR_POSTGRES_PASSWORD}@postgres:5432/profligator
+    PROFLIGATOR_AUTO_CREATE_SCHEMA: "false"
+    PROFLIGATOR_REDIS_URL: redis://redis:6379/0
+    PROFLIGATOR_SYNC_BACKEND: rq
+    PROFLIGATOR_AUTH_SECRET_KEY: ${PROFLIGATOR_AUTH_SECRET_KEY:?Set PROFLIGATOR_AUTH_SECRET_KEY}
+    PROFLIGATOR_AUTH_COOKIE_SECURE: ${PROFLIGATOR_AUTH_COOKIE_SECURE:-true}
+    PROFLIGATOR_PUBLIC_WEB_URL: ${PROFLIGATOR_PUBLIC_WEB_URL:?Set PROFLIGATOR_PUBLIC_WEB_URL}
+    PROFLIGATOR_CORS_ORIGINS: '["${PROFLIGATOR_PUBLIC_WEB_URL}"]'
+    PROFLIGATOR_GOOGLE_CLIENT_ID: ${PROFLIGATOR_GOOGLE_CLIENT_ID:-}
+    PROFLIGATOR_GOOGLE_CLIENT_SECRET: ${PROFLIGATOR_GOOGLE_CLIENT_SECRET:-}
+    PROFLIGATOR_GOOGLE_REDIRECT_URI: ${PROFLIGATOR_GOOGLE_REDIRECT_URI:-}
+    PROFLIGATOR_PASSWORD_RESET_EMAIL_BACKEND: ${PROFLIGATOR_PASSWORD_RESET_EMAIL_BACKEND:-disabled}
+    PROFLIGATOR_SMTP_HOST: ${PROFLIGATOR_SMTP_HOST:-}
+    PROFLIGATOR_SMTP_PORT: ${PROFLIGATOR_SMTP_PORT:-587}
+    PROFLIGATOR_SMTP_SECURITY: ${PROFLIGATOR_SMTP_SECURITY:-starttls}
+    PROFLIGATOR_SMTP_USERNAME: ${PROFLIGATOR_SMTP_USERNAME:-}
+    PROFLIGATOR_SMTP_PASSWORD: ${PROFLIGATOR_SMTP_PASSWORD:-}
+    PROFLIGATOR_SMTP_FROM_EMAIL: ${PROFLIGATOR_SMTP_FROM_EMAIL:-}
+    PROFLIGATOR_VERIFICATION_EMAIL_BACKEND: ${PROFLIGATOR_VERIFICATION_EMAIL_BACKEND:-disabled}
+    PROFLIGATOR_VERIFICATION_SMTP_HOST: ${PROFLIGATOR_VERIFICATION_SMTP_HOST:-smtp.gmail.com}
+    PROFLIGATOR_VERIFICATION_SMTP_PORT: ${PROFLIGATOR_VERIFICATION_SMTP_PORT:-587}
+    PROFLIGATOR_VERIFICATION_SMTP_SECURITY: ${PROFLIGATOR_VERIFICATION_SMTP_SECURITY:-starttls}
+    PROFLIGATOR_VERIFICATION_SMTP_USERNAME: ${PROFLIGATOR_VERIFICATION_SMTP_USERNAME:-}
+    PROFLIGATOR_VERIFICATION_SMTP_PASSWORD: ${PROFLIGATOR_VERIFICATION_SMTP_PASSWORD:-}
+    PROFLIGATOR_VERIFICATION_SMTP_FROM_EMAIL: ${PROFLIGATOR_VERIFICATION_SMTP_FROM_EMAIL:-}
+    PROFLIGATOR_MATCHING_BACKEND: ${PROFLIGATOR_MATCHING_BACKEND:-disabled}
+    PROFLIGATOR_MATCHING_MODEL: ${PROFLIGATOR_MATCHING_MODEL:-}
+    PROFLIGATOR_GROQ_API_KEY: ${PROFLIGATOR_GROQ_API_KEY:-}
+    PROFLIGATOR_GROQ_MIN_INTERVAL_SECONDS: ${PROFLIGATOR_GROQ_MIN_INTERVAL_SECONDS:-2.1}
+    PROFLIGATOR_LEETCODE_CONNECTOR: ${PROFLIGATOR_LEETCODE_CONNECTOR:-scraper}
+    PROFLIGATOR_GEEKSFORGEEKS_CONNECTOR: ${PROFLIGATOR_GEEKSFORGEEKS_CONNECTOR:-scraper}
+    PROFLIGATOR_SCRAPER_STATEMENT_LIMIT: ${PROFLIGATOR_SCRAPER_STATEMENT_LIMIT:-20}
+  depends_on:
+    postgres: {condition: service_healthy}
+    redis: {condition: service_healthy}
+    migrate: {condition: service_completed_successfully}
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: profligator
+      POSTGRES_USER: profligator
+      POSTGRES_PASSWORD: ${PROFLIGATOR_POSTGRES_PASSWORD:?Set PROFLIGATOR_POSTGRES_PASSWORD}
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U profligator -d profligator"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+  redis:
+    image: redis:7-alpine
+    command: [redis-server, --appendonly, "yes"]
+    volumes: [redis-data:/data]
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+  migrate:
+    <<: *backend
+    restart: "no"
+    command: [alembic, -c, apps/api/alembic.ini, upgrade, head]
+    depends_on:
+      postgres: {condition: service_healthy}
+  api:
+    <<: *backend
+    healthcheck:
+      test: [CMD, python, -c, "import json,urllib.request; assert json.load(urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2))['database'] == 'ok'"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+  worker:
+    <<: *backend
+    command: [rq, worker, --path, apps/api/src, --url, redis://redis:6379/0, profligator-syncs]
+  scheduler:
+    <<: *backend
+    command: [python, scripts/run_scheduler.py]
+  web:
+    build:
+      context: ..
+      dockerfile: infra/web.Dockerfile
+    ports: ["127.0.0.1:${PROFLIGATOR_WEB_PORT:-8080}:8080"]
+    depends_on:
+      api: {condition: service_healthy}
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1:8080/health]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  postgres-data:
+  redis-data:

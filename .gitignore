@@ -12,3 +12,12 @@ __pycache__/
 *.py[cod]
 *.db
 .env
+.env.*
+!.env.example
+!.env.production.example
+artifacts/
+
+*.db.locks/
+
+apps/web/public/downloads/*.zip
+apps/web/public/downloads/*.xpi

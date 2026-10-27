@@ -8,9 +8,13 @@
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "build": "npm run build --workspace @profligator/web",
+    "extension:build": "npm run build --workspace @profligator/extension",
+    "extension:test": "npm run test --workspace @profligator/extension",
+    "browser:test": "apps/api/.venv/bin/python scripts/verify_frontend.py",
     "preview": "npm run preview --workspace @profligator/web",
     "api:dev": "node scripts/dev.mjs --api-only",
     "api:test": "uv run --project apps/api --dev pytest -c apps/api/pyproject.toml apps/api/tests",
-    "api:worker": "uv run --project apps/api rq worker --path apps/api/src --url redis://localhost:6379/0 profligator-syncs"
+    "api:worker": "uv run --project apps/api rq worker --path apps/api/src --url redis://localhost:6379/0 profligator-syncs",
+    "api:scheduler": "uv run --project apps/api python scripts/run_scheduler.py"
   }
 }

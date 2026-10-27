@@ -1,0 +1,81 @@
+{
+  "date": "2026-10-07",
+  "execution": "local; GitHub CI configured but not executed",
+  "api_tests": {
+    "passed": 175
+  },
+  "extension": {
+    "test_files_passed": 3,
+    "chromium_package_built": true,
+    "firefox_package_built": true,
+    "real_account_browser_extension_loaded": true,
+    "real_signed_in_history_acceptance": false
+  },
+  "web": {
+    "type_check_passed": true,
+    "production_build_passed": true
+  },
+  "dependency_audit": {
+    "vulnerabilities_reported": 0,
+    "source_map_js_version": "1.2.2"
+  },
+  "frontend": {
+    "passed": true,
+    "data": "isolated database, real application API and offline LC/GFG fixtures; no Google or signed-in platform acceptance",
+    "checks": [
+      "UI registration",
+      "UI profile validation/linking and actual synchronization",
+      "five imported solved records",
+      "solved-question search",
+      "UI sharing and anonymous public view/revocation",
+      "logout/login persists linked accounts",
+      "candidate sharing text",
+      "recruiter navigation and route guards",
+      "same-site shared link validation",
+      "statement/date/matching coverage",
+      "public desktop/mobile rendering",
+      "revoked shared table clears profile",
+      "anonymous protected-route redirect"
+    ],
+    "output": "/tmp/profligator-acceptance-2026-10-07/profligator-frontend-check-qbzh8lez"
+  },
+  "infrastructure": {
+    "passed": true,
+    "checks": [
+      "PostgreSQL legacy-to-head migration preserves user/history and matches model columns",
+      "Actual RQ enqueue/worker completion, API polling and PostgreSQL dashboard queries",
+      "Refresh token rotation and replay rejection on PostgreSQL",
+      "Repeated queued sync is idempotent",
+      "Real worker failure enters RQ failed-job registry"
+    ],
+    "data": "isolated PostgreSQL database, unique Redis queue, offline provider fixtures",
+    "live_scraping_or_inference": false
+  },
+  "container_http": {
+    "passed": true,
+    "origin": "http://127.0.0.1:18080",
+    "sync_states": [
+      "pending",
+      "succeeded"
+    ],
+    "checks": [
+      "static web and SPA routes",
+      "Nginx API proxy",
+      "database health",
+      "cookie registration and access guards",
+      "real worker synchronization and dashboard",
+      "sharing/public view/cache policy/revocation",
+      "logout"
+    ],
+    "data": "synthetic staging account and LeetCode fixture; no live scraper, Google OAuth, TLS or Groq acceptance"
+  },
+  "remaining": [
+    "Real signed-in extension history imports and provider tracking",
+    "Full Firefox platform/history flow",
+    "Representative scraped duplicate corpus and larger-history retrieval evaluation",
+    "Public deployment with HTTPS, Google callback and real provider access",
+    "Concurrent refresh/sync handling, provider retries and cross-process rate limiting",
+    "Backup/restore and worker/scheduler monitoring",
+    "Reviewed repository checkpoint and first GitHub CI execution"
+  ]
+}

@@ -7,18 +7,15 @@ import {
   getCurrentUser,
   linkPlatformProfile,
   listPlatformProfiles,
-  startProfileSync,
   SupportedPlatform,
-  waitForSync,
 } from "./api";
 import addIcon from "./assets/profiles/add.svg";
 import chevronDownIcon from "./assets/profiles/chevron-down.svg";
 import continueArrowIcon from "./assets/profiles/continue-arrow.svg";
-import documentationIcon from "./assets/profiles/documentation.svg";
 import geeksForGeeksIcon from "./assets/profiles/geeksforgeeks.svg";
 import leetCodeIcon from "./assets/profiles/leetcode.svg";
 import privacyShieldIcon from "./assets/profiles/privacy-shield.svg";
-import profileLogo from "./assets/profiles/profile-logo.png";
+import { WorkspaceFooter, WorkspaceHeader } from "./WorkspaceChrome";
 import refreshIcon from "./assets/profiles/refresh.svg";
 import selectArtIcon from "./assets/profiles/select-art.svg";
 import trashIcon from "./assets/profiles/trash.svg";
@@ -48,7 +45,7 @@ const platformDetails: Record<
   leetcode: { label: "LeetCode", prefix: "leetcode.com/u/", icon: leetCodeIcon },
   geeksforgeeks: {
     label: "GeeksforGeeks",
-    prefix: "geeksforgeeks.org/user/",
+    prefix: "geeksforgeeks.org/profile/",
     icon: geeksForGeeksIcon,
   },
   codeforces: { label: "Codeforces", prefix: "codeforces.com/profile/" },
@@ -60,12 +57,9 @@ const platformDetails: Record<
 };
 
 const quickPlatforms: PlatformKey[] = [
+  "leetcode",
+  "geeksforgeeks",
   "codeforces",
-  "codechef",
-  "hackerrank",
-  "atcoder",
-  "kaggle",
-  "github",
 ];
 
 const supportedPlatforms = new Set<PlatformKey>([
@@ -82,10 +76,12 @@ function ProfileRow({
   profile,
   onChange,
   onRemove,
+  disabled,
 }: {
   profile: Profile;
   onChange: (profile: Profile) => void;
   onRemove: () => void;
+  disabled: boolean;
 }) {
   const platform = platformDetails[profile.platform];
 
@@ -101,6 +97,7 @@ function ProfileRow({
           </span>
         )}
         <select
+          disabled={disabled}
           value={profile.platform}
           onChange={(event) =>
             onChange({
@@ -111,8 +108,8 @@ function ProfileRow({
           }
         >
           {Object.entries(platformDetails).map(([key, details]) => (
-            <option key={key} value={key}>
-              {details.label}
+            <option key={key} value={key} disabled={!supportedPlatforms.has(key as PlatformKey)}>
+              {details.label}{!supportedPlatforms.has(key as PlatformKey) && " (not supported yet)"}
             </option>
           ))}
         </select>
@@ -128,6 +125,8 @@ function ProfileRow({
           {platform.prefix}
         </span>
         <input
+          disabled={disabled}
+          aria-label={`${platform.label} username`}
           value={profile.handle}
           spellCheck={false}
           onChange={(event) =>
@@ -150,6 +149,7 @@ function ProfileRow({
 
       <button
         className="remove-profile-button"
+        disabled={disabled}
         type="button"
         aria-label={`Remove ${platform.label} profile`}
         onClick={onRemove}
@@ -167,6 +167,7 @@ function ProfileSetupPage() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("Loading connected profiles…");
+  const [error, setError] = useState<string | null>(null);
   const [removedProfileIds, setRemovedProfileIds] = useState<string[]>([]);
   const [user, setUser] = useState<AuthUser | null>(null);
 
@@ -228,6 +229,7 @@ function ProfileSetupPage() {
 
   function addProfile(platform: PlatformKey = "codeforces") {
     setSaved(false);
+    setError(null);
     setProfiles((current) => [
       ...current,
       {
@@ -241,6 +243,7 @@ function ProfileSetupPage() {
 
   function updateProfile(currentProfile: Profile, nextProfile: Profile) {
     setSaved(false);
+    setError(null);
     let replacement = nextProfile;
     if (
       !currentProfile.id.startsWith("local-") &&
@@ -259,6 +262,7 @@ function ProfileSetupPage() {
 
   function removeProfile(profile: Profile) {
     setSaved(false);
+    setError(null);
     if (!profile.id.startsWith("local-")) {
       setRemovedProfileIds((current) =>
         current.includes(profile.id) ? current : [...current, profile.id],
@@ -269,6 +273,7 @@ function ProfileSetupPage() {
 
   async function checkAll() {
     setChecking(true);
+    setError(null);
     setMessage("Checking profile handles…");
     try {
       const checked = await Promise.all(
@@ -277,17 +282,19 @@ function ProfileSetupPage() {
           if (!isSupportedPlatform(profile.platform)) {
             throw new ApiError(`${platformDetails[profile.platform].label} is not supported yet.`, 422);
           }
-          await checkPlatformProfile(profile.platform, profile.handle.trim());
+          const result = await checkPlatformProfile(profile.platform, profile.handle.trim());
           return {
             ...profile,
-            state: profile.platform === "codeforces" ? "ready" : "fixture_only",
+            handle: result.profile.handle,
+            state: result.live_data ? "ready" : "fixture_only",
           } as Profile;
         }),
       );
       setProfiles(checked);
       setMessage("Profile checks completed.");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Profile checks failed.");
+      setError(error instanceof Error ? error.message : "Profile checks failed.");
+      setMessage("Correct the profile details and try again.");
     } finally {
       setChecking(false);
     }
@@ -297,52 +304,47 @@ function ProfileSetupPage() {
     event.preventDefault();
     setSaving(true);
     setSaved(false);
-    setMessage("Saving profiles and starting synchronization…");
+    setError(null);
+    setMessage("Saving profiles…");
     try {
-      await Promise.all(removedProfileIds.map(disconnectPlatformProfile));
       const populated = profiles.filter((profile) => profile.handle.trim());
+      const unsupported = populated.find((profile) => !isSupportedPlatform(profile.platform));
+      if (unsupported) {
+        throw new ApiError(`${platformDetails[unsupported.platform].label} is not supported yet. Choose LeetCode, GeeksforGeeks or Codeforces, or remove that row.`, 422);
+      }
+      const retainedIds = new Set<string>();
       for (const profile of populated) {
-        if (!isSupportedPlatform(profile.platform)) {
-          throw new ApiError(`${platformDetails[profile.platform].label} is not supported yet.`, 422);
+        if (!isSupportedPlatform(profile.platform)) continue;
+        if (!profile.id.startsWith("local-")) {
+          retainedIds.add(profile.id);
+          continue;
         }
+        setMessage(`Saving ${platformDetails[profile.platform].label} profile…`);
         const linked = await linkPlatformProfile(profile.platform, profile.handle.trim());
-        const run = await startProfileSync(linked.id);
-        await waitForSync(run);
+        retainedIds.add(linked.id);
+      }
+      // Save replacements first so an invalid new handle cannot disconnect the
+      // existing profile. Canonicalization can also return an existing ID.
+      for (const id of removedProfileIds) {
+        if (!retainedIds.has(id)) await disconnectPlatformProfile(id);
+        setRemovedProfileIds((current) => current.filter((value) => value !== id));
       }
       setSaved(true);
-      setMessage("Profiles synchronized. Opening your dashboard…");
-      window.setTimeout(() => window.location.assign("/dashboard"), 250);
+      setMessage("Profiles saved. Opening your dashboard…");
+      // DashboardPage starts/reuses background sync jobs and shows saved data
+      // immediately; navigation must not depend on a provider refresh finishing.
+      window.location.assign("/dashboard");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Profiles could not be saved.");
+      setError(error instanceof Error ? error.message : "Profiles could not be saved.");
+      setMessage("Correct the profile details and try Save & Continue again.");
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    <div className="profiles-page" data-node-id="2603:2059">
-      <header className="setup-header" data-node-id="2603:2207">
-        <div className="setup-header-inner">
-          <a className="setup-brand" href="/login" aria-label="Profligator home">
-            <img src={profileLogo} alt="" />
-            <span>Profligator</span>
-          </a>
-
-          <div className="setup-header-actions">
-            <a className="setup-docs-link" href="#documentation">
-              <img src={documentationIcon} alt="" />
-              <span>Documentation</span>
-            </a>
-            <span className="header-divider" aria-hidden="true" />
-            <div className="account-chip">
-              <span className="account-avatar" aria-hidden="true">
-                {(user?.handle ?? "C").slice(0, 2).toUpperCase()}
-              </span>
-              <span>{user?.email ?? "Loading…"}</span>
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="dashboard-page profiles-page" data-node-id="2603:2059">
+      <WorkspaceHeader user={user} activeTab="profiles" />
 
       <main className="profiles-main">
         <div className="profiles-content">
@@ -354,7 +356,7 @@ function ProfileSetupPage() {
             </div>
             <h1 id="profiles-title">Add your coding profiles</h1>
             <p className="profiles-description">
-              Connect your public handles from LeetCode, Codeforces, GitHub, and more.
+              Connect your LeetCode, GeeksforGeeks and Codeforces profiles.
               Profligator will
               <br />
               aggregate your solved problems, contest ratings, and submission activity into a
@@ -390,21 +392,23 @@ function ProfileSetupPage() {
                   profile={profile}
                   onChange={(nextProfile) => updateProfile(profile, nextProfile)}
                   onRemove={() => removeProfile(profile)}
+                  disabled={loading || saving || checking}
                 />
               ))}
             </div>
 
             <div className="add-platform-section">
-              <button className="add-platform-button" type="button" onClick={() => addProfile()}>
+              <button className="add-platform-button" type="button" disabled={loading || saving || checking} onClick={() => addProfile()}>
                 <img src={addIcon} alt="" />
                 <span>Add another platform</span>
               </button>
               <div className="quick-platforms">
-                <span className="quick-platforms-label">Popular platforms:</span>
+                <span className="quick-platforms-label">Supported platforms:</span>
                 {quickPlatforms.map((platform) => (
                   <button
                     key={platform}
                     type="button"
+                    disabled={loading || saving || checking}
                     onClick={() => addProfile(platform)}
                   >
                     <span aria-hidden="true">+</span>
@@ -414,6 +418,7 @@ function ProfileSetupPage() {
               </div>
             </div>
 
+            {error && <p className="profile-save-error" role="alert">{error}</p>}
             <div className="profiles-card-footer">
               <p role="status">{saved ? "Your profiles have been saved." : message}</p>
               <div className="profile-actions">
@@ -432,17 +437,7 @@ function ProfileSetupPage() {
         </div>
       </main>
 
-      <footer className="setup-footer" data-node-id="2603:2194">
-        <div className="setup-footer-inner">
-          <p>© 2026 Profligator Inc. All rights reserved.</p>
-          <nav aria-label="Legal and support links">
-            <a href="#privacy">Privacy</a>
-            <a href="#terms">Terms</a>
-            <a href="#status">Status</a>
-            <a href="#support">Contact Support</a>
-          </nav>
-        </div>
-      </footer>
+      <WorkspaceFooter />
     </div>
   );
 }

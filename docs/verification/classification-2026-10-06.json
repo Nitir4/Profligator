@@ -1,0 +1,3430 @@
+{
+  "date": "2026-10-06",
+  "execution": "Offline; no API calls, no writes to the application database.",
+  "local_inventory": {
+    "saved_problem_rows": 0,
+    "cached_problem_metadata": 0,
+    "bundled_fixture_titles": 5,
+    "independent_classification_labels": 0
+  },
+  "limitations": [
+    "All labels are manually authored; five titles/tags came from bundled fixtures, remaining text is synthetic.",
+    "Both sets were examined while fixing bugs. Neither is an independent held-out corpus or a representative accuracy estimate.",
+    "Four untagged cases remain unclassified; one renamed untagged equivalent pair is not retrieved.",
+    "Same-family hard negatives are still shortlisted: Groq must determine equivalence. No Groq accuracy was measured in this audit."
+  ],
+  "diagnostics": {
+    "before": {
+      "scope": "Manually labeled local diagnostic examples, including five bundled provider fixture titles. Synthetic task text, aliases, ambiguous names, incidental mentions and alternate formulations. No independently labeled scraped corpus exists locally. This is a regression/coverage audit, not a representative accuracy estimate; labels describe expected retrieval hints, not the only possible solution algorithm. Four DP subtypes and two untagged formulations intentionally exercise unsupported coverage.",
+      "local_only": true,
+      "provider_calls": 0,
+      "classification": {
+        "cases": 44,
+        "exact_label_sets": 27,
+        "exact_label_set_rate": 0.6136363636363636,
+        "families": {
+          "true_positive_labels": 39,
+          "false_positive_labels": 5,
+          "missed_labels": 6,
+          "precision": 0.8863636363636364,
+          "recall": 0.8666666666666667
+        },
+        "dp_patterns": {
+          "true_positive_labels": 13,
+          "false_positive_labels": 8,
+          "missed_labels": 9,
+          "precision": 0.6190476190476191,
+          "recall": 0.5909090909090909
+        },
+        "failures": [
+          {
+            "id": "dp-alias",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "linear/decoding"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": []
+            },
+            "correct": false
+          },
+          {
+            "id": "tree-dp-camel",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "tree"
+              ]
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": false
+          },
+          {
+            "id": "digit-dp-camel",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "digit"
+              ]
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": false
+          },
+          {
+            "id": "bitmask-dp-camel",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "bitmask"
+              ]
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": false
+          },
+          {
+            "id": "interval-dp-camel",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "interval"
+              ]
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": false
+          },
+          {
+            "id": "printing-staircase",
+            "expected": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "linear/recurrence"
+              ]
+            },
+            "correct": false
+          },
+          {
+            "id": "fibonacci-membership",
+            "expected": {
+              "families": [
+                "math"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming",
+                "math"
+              ],
+              "dp_patterns": [
+                "linear/recurrence"
+              ]
+            },
+            "correct": false
+          },
+          {
+            "id": "negated-lcs",
+            "expected": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming",
+                "hashing"
+              ],
+              "dp_patterns": [
+                "sequence/lcs"
+              ]
+            },
+            "correct": false
+          },
+          {
+            "id": "incidental-lis",
+            "expected": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming",
+                "hashing"
+              ],
+              "dp_patterns": [
+                "sequence/lcs",
+                "sequence/lis"
+              ]
+            },
+            "correct": false
+          },
+          {
+            "id": "incidental-title-comparison",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/lcs"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/lcs",
+                "sequence/lis"
+              ]
+            },
+            "correct": false
+          },
+          {
+            "id": "contrasted-knapsack",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "knapsack/unbounded"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "knapsack/zero-one"
+              ]
+            },
+            "correct": false
+          },
+          {
+            "id": "hint-other-task",
+            "expected": {
+              "families": [
+                "stack"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming",
+                "stack"
+              ],
+              "dp_patterns": [
+                "sequence/edit-distance"
+              ]
+            },
+            "correct": false
+          },
+          {
+            "id": "unsupported-palindrome",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/palindrome"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": []
+            },
+            "correct": false
+          },
+          {
+            "id": "unsupported-jumps",
+            "expected": {
+              "families": [
+                "dynamic-programming",
+                "greedy"
+              ],
+              "dp_patterns": [
+                "linear/jumps"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming",
+                "greedy"
+              ],
+              "dp_patterns": []
+            },
+            "correct": false
+          },
+          {
+            "id": "unsupported-grid-cost",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "grid/min-cost"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": []
+            },
+            "correct": false
+          },
+          {
+            "id": "untagged-decoding",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": false
+          },
+          {
+            "id": "untagged-independent-set",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": false
+          }
+        ],
+        "results": [
+          {
+            "id": "fixture-two-sum",
+            "expected": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "fixture-subarray-equals",
+            "expected": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "fixture-islands",
+            "expected": {
+              "families": [
+                "graph"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "graph"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "fixture-subarray-divisible",
+            "expected": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "fixture-undirected-cycle",
+            "expected": {
+              "families": [
+                "graph"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "graph"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "dp-alias",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "linear/decoding"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": []
+            },
+            "correct": false
+          },
+          {
+            "id": "memoization-alias",
+            "expected": {
+              "families": [
+                "dynamic-programming",
+                "graph"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming",
+                "graph"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "priority-queue-alias",
+            "expected": {
+              "families": [
+                "heap"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "heap"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "union-find-alias",
+            "expected": {
+              "families": [
+                "disjoint-set"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "disjoint-set"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "two-pointers-alias",
+            "expected": {
+              "families": [
+                "two-pointers"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "two-pointers"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "sliding-window-alias",
+            "expected": {
+              "families": [
+                "sliding-window"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "sliding-window"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "backtracking-alias",
+            "expected": {
+              "families": [
+                "backtracking"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "backtracking"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "trie-alias",
+            "expected": {
+              "families": [
+                "trie"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "trie"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "stack-alias",
+            "expected": {
+              "families": [
+                "stack"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "stack"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "bit-operations-alias",
+            "expected": {
+              "families": [
+                "bit-operations"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "bit-operations"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "domain-only",
+            "expected": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "multi-algorithm-lis",
+            "expected": {
+              "families": [
+                "binary-search",
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/lis"
+              ]
+            },
+            "actual": {
+              "families": [
+                "binary-search",
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/lis"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "body-lcs",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/lcs"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/lcs"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "edit-distance",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/edit-distance"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/edit-distance"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "knapsack-zero-one",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "knapsack/zero-one"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "knapsack/zero-one"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "knapsack-unbounded",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "knapsack/unbounded"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "knapsack/unbounded"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "subset-sum",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "knapsack/subset-sum"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "knapsack/subset-sum"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "coin-change",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "coin-change"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "coin-change"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "grid-paths",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "grid-paths"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "grid-paths"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "interval",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "interval"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "interval"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "tree-dp-camel",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "tree"
+              ]
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": false
+          },
+          {
+            "id": "digit-dp-camel",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "digit"
+              ]
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": false
+          },
+          {
+            "id": "bitmask-dp-camel",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "bitmask"
+              ]
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": false
+          },
+          {
+            "id": "interval-dp-camel",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "interval"
+              ]
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": false
+          },
+          {
+            "id": "fibonacci-dp",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "linear/recurrence"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "linear/recurrence"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "climbing-stairs",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "linear/recurrence"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "linear/recurrence"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "house-robber",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "linear/nonadjacent"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "linear/nonadjacent"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "printing-staircase",
+            "expected": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "linear/recurrence"
+              ]
+            },
+            "correct": false
+          },
+          {
+            "id": "fibonacci-membership",
+            "expected": {
+              "families": [
+                "math"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming",
+                "math"
+              ],
+              "dp_patterns": [
+                "linear/recurrence"
+              ]
+            },
+            "correct": false
+          },
+          {
+            "id": "negated-lcs",
+            "expected": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming",
+                "hashing"
+              ],
+              "dp_patterns": [
+                "sequence/lcs"
+              ]
+            },
+            "correct": false
+          },
+          {
+            "id": "incidental-lis",
+            "expected": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming",
+                "hashing"
+              ],
+              "dp_patterns": [
+                "sequence/lcs",
+                "sequence/lis"
+              ]
+            },
+            "correct": false
+          },
+          {
+            "id": "incidental-title-comparison",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/lcs"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/lcs",
+                "sequence/lis"
+              ]
+            },
+            "correct": false
+          },
+          {
+            "id": "contrasted-knapsack",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "knapsack/unbounded"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "knapsack/zero-one"
+              ]
+            },
+            "correct": false
+          },
+          {
+            "id": "hint-other-task",
+            "expected": {
+              "families": [
+                "stack"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming",
+                "stack"
+              ],
+              "dp_patterns": [
+                "sequence/edit-distance"
+              ]
+            },
+            "correct": false
+          },
+          {
+            "id": "unsupported-palindrome",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/palindrome"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": []
+            },
+            "correct": false
+          },
+          {
+            "id": "unsupported-jumps",
+            "expected": {
+              "families": [
+                "dynamic-programming",
+                "greedy"
+              ],
+              "dp_patterns": [
+                "linear/jumps"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming",
+                "greedy"
+              ],
+              "dp_patterns": []
+            },
+            "correct": false
+          },
+          {
+            "id": "unsupported-grid-cost",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "grid/min-cost"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": []
+            },
+            "correct": false
+          },
+          {
+            "id": "untagged-decoding",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": false
+          },
+          {
+            "id": "untagged-independent-set",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": false
+          }
+        ]
+      },
+      "retrieval": {
+        "history_size": 57,
+        "limit": 8,
+        "duplicate_pairs": 12,
+        "duplicates_found": 7,
+        "recall_at_limit_including_exact": 0.5833333333333334,
+        "missed_duplicates": [
+          "alias-digit-dp",
+          "knapsack-title-priority",
+          "cross-tag-alternatives",
+          "subset-knapsack-formulation",
+          "renamed-untagged"
+        ],
+        "incompatible_pairs": 3,
+        "incompatible_pairs_admitted": 0,
+        "hard_negative_pairs": 3,
+        "hard_negatives_shortlisted": 3,
+        "note": "Same-bucket hard negatives can be shortlisted; a semantic comparison must reject them.",
+        "results": [
+          {
+            "id": "lcs-paraphrase",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 6,
+            "candidate_ids": [
+              "background-body-lcs",
+              "background-incidental-title-comparison",
+              "background-negated-lcs",
+              "target-lcs-paraphrase",
+              "background-unsupported-palindrome",
+              "background-incidental-lis"
+            ]
+          },
+          {
+            "id": "lis-alternate-tags",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 6,
+            "candidate_ids": [
+              "background-multi-algorithm-lis",
+              "target-different-dp-patterns",
+              "background-incidental-title-comparison",
+              "target-lis-alternate-tags",
+              "background-unsupported-palindrome",
+              "background-incidental-lis"
+            ]
+          },
+          {
+            "id": "alias-digit-dp",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": false,
+            "found": false,
+            "candidate_count": 3,
+            "candidate_ids": [
+              "background-dp-alias",
+              "background-digit-dp-camel",
+              "background-untagged-decoding"
+            ]
+          },
+          {
+            "id": "negated-approach",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 4,
+            "candidate_ids": [
+              "background-hint-other-task",
+              "target-negated-approach",
+              "background-edit-distance",
+              "target-edit-distance-paraphrase"
+            ]
+          },
+          {
+            "id": "knapsack-title-priority",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": false,
+            "found": false,
+            "candidate_count": 3,
+            "candidate_ids": [
+              "background-contrasted-knapsack",
+              "background-knapsack-zero-one",
+              "target-subset-knapsack-formulation"
+            ]
+          },
+          {
+            "id": "missing-tags-pair",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 2,
+            "candidate_ids": [
+              "background-incidental-lis",
+              "target-missing-tags-pair"
+            ]
+          },
+          {
+            "id": "cross-tag-alternatives",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": false,
+            "found": false,
+            "candidate_count": 2,
+            "candidate_ids": [
+              "background-unsupported-jumps",
+              "background-coin-change"
+            ]
+          },
+          {
+            "id": "subset-knapsack-formulation",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": false,
+            "found": false,
+            "candidate_count": 2,
+            "candidate_ids": [
+              "background-subset-sum",
+              "target-missing-tags-pair"
+            ]
+          },
+          {
+            "id": "renamed-untagged",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": false,
+            "found": false,
+            "candidate_count": 3,
+            "candidate_ids": [
+              "background-house-robber",
+              "background-memoization-alias",
+              "background-untagged-independent-set"
+            ]
+          },
+          {
+            "id": "exact-wrong-tags",
+            "relation": "duplicate",
+            "exact": true,
+            "shortlisted": false,
+            "found": true,
+            "candidate_count": 5,
+            "candidate_ids": [
+              "background-multi-algorithm-lis",
+              "target-lis-alternate-tags",
+              "background-subset-sum",
+              "background-body-lcs",
+              "target-missing-tags-pair"
+            ]
+          },
+          {
+            "id": "edit-distance-paraphrase",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 3,
+            "candidate_ids": [
+              "background-edit-distance",
+              "target-edit-distance-paraphrase",
+              "background-hint-other-task"
+            ]
+          },
+          {
+            "id": "coin-change-paraphrase",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 4,
+            "candidate_ids": [
+              "background-coin-change",
+              "target-same-pattern-different-output",
+              "target-coin-change-paraphrase",
+              "target-missing-tags-pair"
+            ]
+          },
+          {
+            "id": "different-dp-patterns",
+            "relation": "incompatible",
+            "exact": false,
+            "shortlisted": false,
+            "found": false,
+            "candidate_count": 5,
+            "candidate_ids": [
+              "background-body-lcs",
+              "background-incidental-lis",
+              "background-unsupported-palindrome",
+              "background-incidental-title-comparison",
+              "background-negated-lcs"
+            ]
+          },
+          {
+            "id": "different-knapsack-variants",
+            "relation": "incompatible",
+            "exact": false,
+            "shortlisted": false,
+            "found": false,
+            "candidate_count": 3,
+            "candidate_ids": [
+              "background-knapsack-zero-one",
+              "target-subset-knapsack-formulation",
+              "background-contrasted-knapsack"
+            ]
+          },
+          {
+            "id": "different-families",
+            "relation": "incompatible",
+            "exact": false,
+            "shortlisted": false,
+            "found": false,
+            "candidate_count": 5,
+            "candidate_ids": [
+              "background-memoization-alias",
+              "target-lis-alternate-tags",
+              "background-interval",
+              "target-knapsack-title-priority",
+              "background-fibonacci-membership"
+            ]
+          },
+          {
+            "id": "case-sensitive-output",
+            "relation": "hard_negative",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 2,
+            "candidate_ids": [
+              "target-case-sensitive-output",
+              "background-negated-lcs"
+            ]
+          },
+          {
+            "id": "same-pattern-different-output",
+            "relation": "hard_negative",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 3,
+            "candidate_ids": [
+              "background-coin-change",
+              "target-same-pattern-different-output",
+              "target-coin-change-paraphrase"
+            ]
+          },
+          {
+            "id": "directed-undirected",
+            "relation": "hard_negative",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 1,
+            "candidate_ids": [
+              "target-directed-undirected"
+            ]
+          }
+        ]
+      }
+    },
+    "after": {
+      "scope": "Manually labeled local diagnostic examples, including five bundled provider fixture titles. Synthetic task text, aliases, ambiguous names, incidental mentions and alternate formulations. No independently labeled scraped corpus exists locally. This is a regression/coverage audit, not a representative accuracy estimate; labels describe expected retrieval hints, not the only possible solution algorithm. Four DP subtypes and two untagged formulations explicitly probe coverage gaps.",
+      "local_only": true,
+      "provider_calls": 0,
+      "classification": {
+        "cases": 44,
+        "exact_label_sets": 42,
+        "exact_label_set_rate": 0.9545454545454546,
+        "families": {
+          "true_positive_labels": 43,
+          "false_positive_labels": 0,
+          "missed_labels": 2,
+          "precision": 1.0,
+          "recall": 0.9555555555555556
+        },
+        "dp_patterns": {
+          "true_positive_labels": 22,
+          "false_positive_labels": 0,
+          "missed_labels": 0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "failures": [
+          {
+            "id": "untagged-decoding",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": false
+          },
+          {
+            "id": "untagged-independent-set",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": false
+          }
+        ],
+        "results": [
+          {
+            "id": "fixture-two-sum",
+            "expected": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "fixture-subarray-equals",
+            "expected": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "fixture-islands",
+            "expected": {
+              "families": [
+                "graph"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "graph"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "fixture-subarray-divisible",
+            "expected": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "fixture-undirected-cycle",
+            "expected": {
+              "families": [
+                "graph"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "graph"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "dp-alias",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "linear/decoding"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "linear/decoding"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "memoization-alias",
+            "expected": {
+              "families": [
+                "dynamic-programming",
+                "graph"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming",
+                "graph"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "priority-queue-alias",
+            "expected": {
+              "families": [
+                "heap"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "heap"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "union-find-alias",
+            "expected": {
+              "families": [
+                "disjoint-set"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "disjoint-set"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "two-pointers-alias",
+            "expected": {
+              "families": [
+                "two-pointers"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "two-pointers"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "sliding-window-alias",
+            "expected": {
+              "families": [
+                "sliding-window"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "sliding-window"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "backtracking-alias",
+            "expected": {
+              "families": [
+                "backtracking"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "backtracking"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "trie-alias",
+            "expected": {
+              "families": [
+                "trie"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "trie"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "stack-alias",
+            "expected": {
+              "families": [
+                "stack"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "stack"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "bit-operations-alias",
+            "expected": {
+              "families": [
+                "bit-operations"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "bit-operations"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "domain-only",
+            "expected": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "multi-algorithm-lis",
+            "expected": {
+              "families": [
+                "binary-search",
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/lis"
+              ]
+            },
+            "actual": {
+              "families": [
+                "binary-search",
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/lis"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "body-lcs",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/lcs"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/lcs"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "edit-distance",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/edit-distance"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/edit-distance"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "knapsack-zero-one",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "knapsack/zero-one"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "knapsack/zero-one"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "knapsack-unbounded",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "knapsack/unbounded"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "knapsack/unbounded"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "subset-sum",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "knapsack/subset-sum"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "knapsack/subset-sum"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "coin-change",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "coin-change"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "coin-change"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "grid-paths",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "grid-paths"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "grid-paths"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "interval",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "interval"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "interval"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "tree-dp-camel",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "tree"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "tree"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "digit-dp-camel",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "digit"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "digit"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "bitmask-dp-camel",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "bitmask"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "bitmask"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "interval-dp-camel",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "interval"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "interval"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "fibonacci-dp",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "linear/recurrence"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "linear/recurrence"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "climbing-stairs",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "linear/recurrence"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "linear/recurrence"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "house-robber",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "linear/nonadjacent"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "linear/nonadjacent"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "printing-staircase",
+            "expected": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "fibonacci-membership",
+            "expected": {
+              "families": [
+                "math"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "math"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "negated-lcs",
+            "expected": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "incidental-lis",
+            "expected": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "incidental-title-comparison",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/lcs"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/lcs"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "contrasted-knapsack",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "knapsack/unbounded"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "knapsack/unbounded"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "hint-other-task",
+            "expected": {
+              "families": [
+                "stack"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "stack"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "unsupported-palindrome",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/palindrome"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/palindrome"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "unsupported-jumps",
+            "expected": {
+              "families": [
+                "dynamic-programming",
+                "greedy"
+              ],
+              "dp_patterns": [
+                "linear/jumps"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming",
+                "greedy"
+              ],
+              "dp_patterns": [
+                "linear/jumps"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "unsupported-grid-cost",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "grid/min-cost"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "grid/min-cost"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "untagged-decoding",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": false
+          },
+          {
+            "id": "untagged-independent-set",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": false
+          }
+        ]
+      },
+      "retrieval": {
+        "history_size": 57,
+        "limit": 8,
+        "duplicate_pairs": 12,
+        "duplicates_found": 12,
+        "recall_at_limit_including_exact": 1.0,
+        "missed_duplicates": [],
+        "incompatible_pairs": 3,
+        "incompatible_pairs_admitted": 0,
+        "hard_negative_pairs": 3,
+        "hard_negatives_shortlisted": 3,
+        "note": "Same-bucket hard negatives can be shortlisted; a semantic comparison must reject them.",
+        "results": [
+          {
+            "id": "lcs-paraphrase",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 3,
+            "candidate_ids": [
+              "background-body-lcs",
+              "background-incidental-title-comparison",
+              "target-lcs-paraphrase"
+            ]
+          },
+          {
+            "id": "lis-alternate-tags",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 3,
+            "candidate_ids": [
+              "background-multi-algorithm-lis",
+              "target-different-dp-patterns",
+              "target-lis-alternate-tags"
+            ]
+          },
+          {
+            "id": "alias-digit-dp",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 3,
+            "candidate_ids": [
+              "background-digit-dp-camel",
+              "target-alias-digit-dp",
+              "background-untagged-decoding"
+            ]
+          },
+          {
+            "id": "negated-approach",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 2,
+            "candidate_ids": [
+              "background-hint-other-task",
+              "target-negated-approach"
+            ]
+          },
+          {
+            "id": "knapsack-title-priority",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 4,
+            "candidate_ids": [
+              "background-contrasted-knapsack",
+              "background-knapsack-unbounded",
+              "target-different-knapsack-variants",
+              "target-knapsack-title-priority"
+            ]
+          },
+          {
+            "id": "missing-tags-pair",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 2,
+            "candidate_ids": [
+              "background-incidental-lis",
+              "target-missing-tags-pair"
+            ]
+          },
+          {
+            "id": "cross-tag-alternatives",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 2,
+            "candidate_ids": [
+              "background-unsupported-jumps",
+              "target-cross-tag-alternatives"
+            ]
+          },
+          {
+            "id": "subset-knapsack-formulation",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 4,
+            "candidate_ids": [
+              "background-subset-sum",
+              "target-subset-knapsack-formulation",
+              "background-knapsack-zero-one",
+              "target-missing-tags-pair"
+            ]
+          },
+          {
+            "id": "renamed-untagged",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 4,
+            "candidate_ids": [
+              "background-house-robber",
+              "background-memoization-alias",
+              "background-untagged-independent-set",
+              "target-renamed-untagged"
+            ]
+          },
+          {
+            "id": "exact-wrong-tags",
+            "relation": "duplicate",
+            "exact": true,
+            "shortlisted": false,
+            "found": true,
+            "candidate_count": 5,
+            "candidate_ids": [
+              "background-multi-algorithm-lis",
+              "target-lis-alternate-tags",
+              "background-subset-sum",
+              "background-body-lcs",
+              "target-missing-tags-pair"
+            ]
+          },
+          {
+            "id": "edit-distance-paraphrase",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 2,
+            "candidate_ids": [
+              "background-edit-distance",
+              "target-edit-distance-paraphrase"
+            ]
+          },
+          {
+            "id": "coin-change-paraphrase",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 4,
+            "candidate_ids": [
+              "background-coin-change",
+              "target-same-pattern-different-output",
+              "target-coin-change-paraphrase",
+              "target-missing-tags-pair"
+            ]
+          },
+          {
+            "id": "different-dp-patterns",
+            "relation": "incompatible",
+            "exact": false,
+            "shortlisted": false,
+            "found": false,
+            "candidate_count": 2,
+            "candidate_ids": [
+              "background-body-lcs",
+              "background-incidental-title-comparison"
+            ]
+          },
+          {
+            "id": "different-knapsack-variants",
+            "relation": "incompatible",
+            "exact": false,
+            "shortlisted": false,
+            "found": false,
+            "candidate_count": 3,
+            "candidate_ids": [
+              "background-knapsack-zero-one",
+              "target-subset-knapsack-formulation",
+              "background-subset-sum"
+            ]
+          },
+          {
+            "id": "different-families",
+            "relation": "incompatible",
+            "exact": false,
+            "shortlisted": false,
+            "found": false,
+            "candidate_count": 4,
+            "candidate_ids": [
+              "background-memoization-alias",
+              "target-lis-alternate-tags",
+              "target-knapsack-title-priority",
+              "background-interval"
+            ]
+          },
+          {
+            "id": "case-sensitive-output",
+            "relation": "hard_negative",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 2,
+            "candidate_ids": [
+              "target-case-sensitive-output",
+              "background-negated-lcs"
+            ]
+          },
+          {
+            "id": "same-pattern-different-output",
+            "relation": "hard_negative",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 3,
+            "candidate_ids": [
+              "background-coin-change",
+              "target-same-pattern-different-output",
+              "target-coin-change-paraphrase"
+            ]
+          },
+          {
+            "id": "directed-undirected",
+            "relation": "hard_negative",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 1,
+            "candidate_ids": [
+              "target-directed-undirected"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "additional_challenges": {
+    "before_final_fixes": {
+      "scope": "Additional manually authored local challenges evaluated after the diagnostic fixes. Not an independent or representative holdout: written by the same developer, with no scraped ground-truth corpus. Tests contextual negation, unsupported aliases, paraphrases, and keyword competition. Do not combine into a production accuracy estimate.",
+      "local_only": true,
+      "provider_calls": 0,
+      "classification": {
+        "cases": 16,
+        "exact_label_sets": 11,
+        "exact_label_set_rate": 0.6875,
+        "families": {
+          "true_positive_labels": 12,
+          "false_positive_labels": 1,
+          "missed_labels": 4,
+          "precision": 0.9230769230769231,
+          "recall": 0.75
+        },
+        "dp_patterns": {
+          "true_positive_labels": 6,
+          "false_positive_labels": 3,
+          "missed_labels": 2,
+          "precision": 0.6666666666666666,
+          "recall": 0.75
+        },
+        "failures": [
+          {
+            "id": "tree-long-alias",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "tree"
+              ]
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": false
+          },
+          {
+            "id": "disjoint-set-long-alias",
+            "expected": {
+              "families": [
+                "disjoint-set"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": false
+          },
+          {
+            "id": "example-only",
+            "expected": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming",
+                "hashing"
+              ],
+              "dp_patterns": [
+                "knapsack",
+                "sequence/edit-distance",
+                "sequence/lcs"
+              ]
+            },
+            "correct": false
+          },
+          {
+            "id": "untagged-graph",
+            "expected": {
+              "families": [
+                "graph"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": false
+          },
+          {
+            "id": "untagged-edit-paraphrase",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/edit-distance"
+              ]
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": false
+          }
+        ],
+        "results": [
+          {
+            "id": "lcs-negative-constraint",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/lcs"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/lcs"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "avoid-before-task",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "linear/jumps"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "linear/jumps"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "dp-tag-punctuation",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "lcs-example-title",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/lcs"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/lcs"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "lcs-identifier",
+            "expected": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "palindrome-substring",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "palindrome-subsequence",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/palindrome"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/palindrome"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "tree-long-alias",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "tree"
+              ]
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": false
+          },
+          {
+            "id": "disjoint-set-long-alias",
+            "expected": {
+              "families": [
+                "disjoint-set"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": false
+          },
+          {
+            "id": "unbounded-example",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "knapsack/unbounded"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "knapsack/unbounded"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "negated-title",
+            "expected": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "example-only",
+            "expected": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming",
+                "hashing"
+              ],
+              "dp_patterns": [
+                "knapsack",
+                "sequence/edit-distance",
+                "sequence/lcs"
+              ]
+            },
+            "correct": false
+          },
+          {
+            "id": "zero-one-spacing",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "knapsack/zero-one"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "knapsack/zero-one"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "tree-domain",
+            "expected": {
+              "families": [
+                "graph"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "graph"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "untagged-graph",
+            "expected": {
+              "families": [
+                "graph"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": false
+          },
+          {
+            "id": "untagged-edit-paraphrase",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/edit-distance"
+              ]
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": false
+          }
+        ]
+      },
+      "retrieval": {
+        "history_size": 23,
+        "limit": 8,
+        "duplicate_pairs": 5,
+        "duplicates_found": 3,
+        "recall_at_limit_including_exact": 0.6,
+        "missed_duplicates": [
+          "renamed-edit-no-tags",
+          "long-description"
+        ],
+        "incompatible_pairs": 1,
+        "incompatible_pairs_admitted": 0,
+        "hard_negative_pairs": 1,
+        "hard_negatives_shortlisted": 1,
+        "note": "Same-bucket hard negatives can be shortlisted; a semantic comparison must reject them.",
+        "results": [
+          {
+            "id": "negative-constraint-lcs",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 6,
+            "candidate_ids": [
+              "background-lcs-negative-constraint",
+              "target-palindrome-paraphrase",
+              "background-lcs-example-title",
+              "target-negative-constraint-lcs",
+              "background-palindrome-substring",
+              "background-example-only"
+            ]
+          },
+          {
+            "id": "palindrome-paraphrase",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 3,
+            "candidate_ids": [
+              "background-palindrome-subsequence",
+              "background-palindrome-substring",
+              "target-palindrome-paraphrase"
+            ]
+          },
+          {
+            "id": "pair-output-count",
+            "relation": "hard_negative",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 3,
+            "candidate_ids": [
+              "target-pair-output-count",
+              "target-long-description",
+              "target-tree-long-tag-only"
+            ]
+          },
+          {
+            "id": "tree-vs-digit",
+            "relation": "incompatible",
+            "exact": false,
+            "shortlisted": false,
+            "found": false,
+            "candidate_count": 1,
+            "candidate_ids": [
+              "background-dp-tag-punctuation"
+            ]
+          },
+          {
+            "id": "renamed-edit-no-tags",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": false,
+            "found": false,
+            "candidate_count": 2,
+            "candidate_ids": [
+              "background-example-only",
+              "background-untagged-edit-paraphrase"
+            ]
+          },
+          {
+            "id": "tree-long-tag-only",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 3,
+            "candidate_ids": [
+              "background-dp-tag-punctuation",
+              "background-tree-long-alias",
+              "target-tree-long-tag-only"
+            ]
+          },
+          {
+            "id": "long-description",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": false,
+            "found": false,
+            "candidate_count": 0,
+            "candidate_ids": []
+          }
+        ]
+      }
+    },
+    "after": {
+      "scope": "Additional manually authored local challenges evaluated after the diagnostic fixes. Not an independent or representative holdout: written by the same developer, with no scraped ground-truth corpus. Tests contextual negation, unsupported aliases, paraphrases, and keyword competition. Do not combine into a production accuracy estimate.",
+      "local_only": true,
+      "provider_calls": 0,
+      "classification": {
+        "cases": 16,
+        "exact_label_sets": 14,
+        "exact_label_set_rate": 0.875,
+        "families": {
+          "true_positive_labels": 14,
+          "false_positive_labels": 0,
+          "missed_labels": 2,
+          "precision": 1.0,
+          "recall": 0.875
+        },
+        "dp_patterns": {
+          "true_positive_labels": 7,
+          "false_positive_labels": 0,
+          "missed_labels": 1,
+          "precision": 1.0,
+          "recall": 0.875
+        },
+        "failures": [
+          {
+            "id": "untagged-graph",
+            "expected": {
+              "families": [
+                "graph"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": false
+          },
+          {
+            "id": "untagged-edit-paraphrase",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/edit-distance"
+              ]
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": false
+          }
+        ],
+        "results": [
+          {
+            "id": "lcs-negative-constraint",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/lcs"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/lcs"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "avoid-before-task",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "linear/jumps"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "linear/jumps"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "dp-tag-punctuation",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "lcs-example-title",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/lcs"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/lcs"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "lcs-identifier",
+            "expected": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "palindrome-substring",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "palindrome-subsequence",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/palindrome"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/palindrome"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "tree-long-alias",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "tree"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "tree"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "disjoint-set-long-alias",
+            "expected": {
+              "families": [
+                "disjoint-set"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "disjoint-set"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "unbounded-example",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "knapsack/unbounded"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "knapsack/unbounded"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "negated-title",
+            "expected": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "example-only",
+            "expected": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "hashing"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "zero-one-spacing",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "knapsack/zero-one"
+              ]
+            },
+            "actual": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "knapsack/zero-one"
+              ]
+            },
+            "correct": true
+          },
+          {
+            "id": "tree-domain",
+            "expected": {
+              "families": [
+                "graph"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [
+                "graph"
+              ],
+              "dp_patterns": []
+            },
+            "correct": true
+          },
+          {
+            "id": "untagged-graph",
+            "expected": {
+              "families": [
+                "graph"
+              ],
+              "dp_patterns": []
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": false
+          },
+          {
+            "id": "untagged-edit-paraphrase",
+            "expected": {
+              "families": [
+                "dynamic-programming"
+              ],
+              "dp_patterns": [
+                "sequence/edit-distance"
+              ]
+            },
+            "actual": {
+              "families": [],
+              "dp_patterns": []
+            },
+            "correct": false
+          }
+        ]
+      },
+      "retrieval": {
+        "history_size": 23,
+        "limit": 8,
+        "duplicate_pairs": 5,
+        "duplicates_found": 4,
+        "recall_at_limit_including_exact": 0.8,
+        "missed_duplicates": [
+          "renamed-edit-no-tags"
+        ],
+        "incompatible_pairs": 1,
+        "incompatible_pairs_admitted": 0,
+        "hard_negative_pairs": 1,
+        "hard_negatives_shortlisted": 1,
+        "note": "Same-bucket hard negatives can be shortlisted; a semantic comparison must reject them.",
+        "results": [
+          {
+            "id": "negative-constraint-lcs",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 5,
+            "candidate_ids": [
+              "background-lcs-negative-constraint",
+              "target-palindrome-paraphrase",
+              "background-lcs-example-title",
+              "target-negative-constraint-lcs",
+              "background-palindrome-substring"
+            ]
+          },
+          {
+            "id": "palindrome-paraphrase",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 3,
+            "candidate_ids": [
+              "background-palindrome-subsequence",
+              "background-palindrome-substring",
+              "target-palindrome-paraphrase"
+            ]
+          },
+          {
+            "id": "pair-output-count",
+            "relation": "hard_negative",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 2,
+            "candidate_ids": [
+              "target-pair-output-count",
+              "target-long-description"
+            ]
+          },
+          {
+            "id": "tree-vs-digit",
+            "relation": "incompatible",
+            "exact": false,
+            "shortlisted": false,
+            "found": false,
+            "candidate_count": 3,
+            "candidate_ids": [
+              "background-dp-tag-punctuation",
+              "target-tree-long-tag-only",
+              "background-tree-long-alias"
+            ]
+          },
+          {
+            "id": "renamed-edit-no-tags",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": false,
+            "found": false,
+            "candidate_count": 1,
+            "candidate_ids": [
+              "background-untagged-edit-paraphrase"
+            ]
+          },
+          {
+            "id": "tree-long-tag-only",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 3,
+            "candidate_ids": [
+              "background-tree-long-alias",
+              "target-tree-long-tag-only",
+              "background-dp-tag-punctuation"
+            ]
+          },
+          {
+            "id": "long-description",
+            "relation": "duplicate",
+            "exact": false,
+            "shortlisted": true,
+            "found": true,
+            "candidate_count": 2,
+            "candidate_ids": [
+              "target-long-description",
+              "target-pair-output-count"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "regression_suite": {
+    "passed": 174
+  },
+  "source_sha256": "c298d59495f85486f4482392c776611bfe61db61227137e1b232fb0531174ff1",
+  "dataset_sha256": {
+    "apps/api/tests/fixtures/retrieval_diagnostics.json": "30cebe3db8f0ac61c6b2fb1a9f63c81bd42944fdbb88ad20120d32fe762d6d45",
+    "apps/api/tests/fixtures/retrieval_challenges.json": "42b523771b76ce1787545608f22d2a9dd92eea3c66362f63ced2e3f4fbf8fac3"
+  }
+}

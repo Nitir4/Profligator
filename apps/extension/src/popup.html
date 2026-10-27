@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Profligator</title><link rel="stylesheet" href="popup.css"></head>
+<body><header><span class="brand"><img src="profligator-mark.svg" alt=""></span><h1>Profligator</h1><span class="extension-badge">EXTENSION</span></header>
+<main><p id="connection" role="status">Checking connection…</p>
+<button id="connect" hidden>Connect with Profligator</button>
+<section aria-labelledby="question"><h2 id="question">Current question</h2><p id="platform"></p><p id="status" role="status">Loading…</p>
+<a id="attempt" target="_blank" rel="noopener noreferrer" hidden>View previous attempt</a>
+<button id="check" hidden>Check this question</button></section>
+<section id="history" hidden aria-labelledby="history-title"><h2 id="history-title">Solved questions</h2>
+<p class="notice">Import names and available dates from your linked accounts. Tracking checks for accepted submissions after you submit.</p>
+<div id="history-accounts"></div><p id="history-empty" hidden>Link a coding account in Profligator first.</p>
+<p class="notice">LeetCode imports use your signed-in tab. Keep it open. Dates are earliest retrieved acceptances; unavailable dates remain unknown.</p></section>
+<p id="error" role="alert" hidden></p>
+<p class="notice">Checks use your imported history. A missing match does not prove a question is new.</p>
+<nav><button id="dashboard">Open dashboard</button><button id="disconnect" hidden>Disconnect this browser</button></nav></main>
+<script src="config.js"></script><script src="core.js"></script><script src="popup.js"></script></body></html>

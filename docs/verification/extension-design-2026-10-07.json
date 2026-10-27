@@ -1,0 +1,65 @@
+{
+  "date": "2026-10-07",
+  "reference": {
+    "figma_file": "eJnpqtoALXCdAu7EHcGrq1",
+    "frame": "2603:1161",
+    "notification": "2603:1342",
+    "document": "Group - 5 .docx",
+    "figure": "11.10"
+  },
+  "palette": {
+    "surface": "#ffffff",
+    "ink": "#0f172a",
+    "secondary_text": "#475569",
+    "muted_text": "#64748b",
+    "primary": "#4f46e5",
+    "inset": "#f8fafc",
+    "border": "#e2e8f0",
+    "accent_gradient": [
+      "#4f46e5",
+      "#6366f1",
+      "#818cf8"
+    ]
+  },
+  "assets": "Original exported icons reused from apps/web/src/assets/extension; Inter fonts reused from existing @fontsource/inter dependency",
+  "extension_tests_passed": true,
+  "chromium_and_firefox_builds_passed": true,
+  "installed_chromium": {
+    "passed": true,
+    "browser": "Chromium",
+    "checks": [
+      "web login and explicit connection",
+      "known solved identity",
+      "cross-platform exact match",
+      "popup and current question",
+      "original submission navigation",
+      "dismissal",
+      "SPA stale DOM",
+      "unrelated question without alert",
+      "Codeforces fallback link",
+      "browser restart",
+      "revocation"
+    ],
+    "history_checks": [
+      "installed popup imports for all three platforms",
+      "LeetCode signed-in names and acceptance dates",
+      "GFG source clocks stay unzoned",
+      "opt-in acceptance tracking on all three platforms",
+      "Run does not track",
+      "Codeforces confirmation survives navigation",
+      "tracking persists across browser restart"
+    ],
+    "platform_pages": "controlled fixtures",
+    "live_page_compatibility": []
+  },
+  "owned_browser_popup": {
+    "reloaded": true,
+    "background": "rgb(255, 255, 255)",
+    "primary": "rgb(79, 70, 229)",
+    "font": "Inter, sans-serif",
+    "brand_icon_loaded": true,
+    "screenshot": "/tmp/profligator-extension-design-2026-10-07/popup.png",
+    "connected": false
+  },
+  "signed_in_history_acceptance": false
+}

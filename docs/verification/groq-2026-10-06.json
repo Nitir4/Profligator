@@ -1,0 +1,166 @@
+{
+  "checked_on": "2026-10-06",
+  "scope": "Synthetic integration smoke checks, not launch accuracy validation",
+  "model_evaluation": [
+    {
+      "model": "exact",
+      "provider": "exact",
+      "evaluated_pairs": 6,
+      "true_positives": 1,
+      "false_positives": 0,
+      "true_negatives": 4,
+      "false_negatives": 1,
+      "precision": 1.0,
+      "recall": 0.5,
+      "false_positive_rate": 0.0,
+      "provider_errors": 0,
+      "mean_latency_seconds": 0.0,
+      "estimated_cost": null,
+      "cost_note": "Supply provider billing or local compute cost separately; no pricing is assumed.",
+      "results": [
+        {
+          "id": "same-statement-renamed",
+          "expected": true,
+          "predicted": true,
+          "latency_seconds": 0.0,
+          "error": null
+        },
+        {
+          "id": "paraphrased-pair-search",
+          "expected": true,
+          "predicted": false,
+          "latency_seconds": 0.0,
+          "error": null
+        },
+        {
+          "id": "equals-versus-divisible",
+          "expected": false,
+          "predicted": false,
+          "latency_seconds": 0.0,
+          "error": null
+        },
+        {
+          "id": "directed-versus-undirected",
+          "expected": false,
+          "predicted": false,
+          "latency_seconds": 0.0,
+          "error": null
+        },
+        {
+          "id": "indices-versus-pair-count",
+          "expected": false,
+          "predicted": false,
+          "latency_seconds": 0.0,
+          "error": null
+        },
+        {
+          "id": "case-sensitive-input",
+          "expected": false,
+          "predicted": false,
+          "latency_seconds": 0.0,
+          "error": null
+        }
+      ]
+    },
+    {
+      "model": "openai/gpt-oss-120b",
+      "provider": "groq",
+      "evaluated_pairs": 6,
+      "true_positives": 2,
+      "false_positives": 0,
+      "true_negatives": 4,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0,
+      "provider_errors": 0,
+      "mean_latency_seconds": 1.8984166666666666,
+      "estimated_cost": null,
+      "cost_note": "Supply provider billing or local compute cost separately; no pricing is assumed.",
+      "results": [
+        {
+          "id": "same-statement-renamed",
+          "expected": true,
+          "predicted": true,
+          "latency_seconds": 0.816,
+          "error": null
+        },
+        {
+          "id": "paraphrased-pair-search",
+          "expected": true,
+          "predicted": true,
+          "latency_seconds": 2.4576,
+          "error": null
+        },
+        {
+          "id": "equals-versus-divisible",
+          "expected": false,
+          "predicted": false,
+          "latency_seconds": 1.8394,
+          "error": null
+        },
+        {
+          "id": "directed-versus-undirected",
+          "expected": false,
+          "predicted": false,
+          "latency_seconds": 2.3402,
+          "error": null
+        },
+        {
+          "id": "indices-versus-pair-count",
+          "expected": false,
+          "predicted": false,
+          "latency_seconds": 1.9037,
+          "error": null
+        },
+        {
+          "id": "case-sensitive-input",
+          "expected": false,
+          "predicted": false,
+          "latency_seconds": 2.0336,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "application_check": {
+    "passed": true,
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b",
+    "data": "synthetic questions in an isolated temporary SQLite database",
+    "checks": [
+      "semantic clustering",
+      "dashboard matching coverage",
+      "semantic extension response with original-attempt link",
+      "similar topic with different output rejected",
+      "no similarity score exposed"
+    ],
+    "launch_accuracy_validated": false
+  },
+  "retrieval_update": {
+    "backend_tests_passed": 165,
+    "classification": "local topic aliases and multi-label DP pattern heuristics",
+    "known_candidate_limit": 8,
+    "unknown_fallback_limit": 2,
+    "synthetic_shortlist_check": {
+      "unrelated_graph_questions": 1000,
+      "related_dp_candidates": 20,
+      "shortlisted_dp_candidates": 8
+    },
+    "application_check": {
+      "passed": true,
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "data": "synthetic questions in an isolated temporary SQLite database",
+      "checks": [
+        "semantic clustering",
+        "dashboard matching coverage",
+        "semantic extension response with original-attempt link",
+        "similar topic with different output rejected",
+        "no similarity score exposed"
+      ],
+      "launch_accuracy_validated": false
+    },
+    "real_world_retrieval_recall_validated": false
+  }
+}
