@@ -16,6 +16,7 @@ __pycache__/
 !.env.example
 !.env.production.example
 artifacts/
+docs/private/
 
 *.db.locks/
 

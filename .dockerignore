@@ -11,5 +11,6 @@
 **/*.log
 **/*.docx
 artifacts
+docs/private
 test-results
 playwright-report

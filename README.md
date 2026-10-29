@@ -4,6 +4,8 @@ Profligator brings coding practice from LeetCode, GeeksforGeeks and Codeforces i
 
 Deployment origins and operator contact details are configured privately; the public repository uses example domains only.
 
+Start with the [documentation index](docs/README.md) for setup, account workflows, architecture, testing and the current acceptance checklist. The guides were reviewed against the source on **15 November 2026**; dated October measurements remain historical evidence.
+
 ## What you can do
 
 - Sign up with email/password or Google, with candidate and recruiter roles. Rotating refresh sessions keep you signed in across browser restarts for up to 30 days.
@@ -70,6 +72,8 @@ Keep credentials, deployment origins and operator email addresses in ignored env
 | HTTPS/container deployment | [Deployment guide](docs/deployment.md) and [production environment example](infra/.env.production.example) |
 
 The browser and extension call Profligator's API. Google client secrets, SMTP app passwords, model keys and coding-platform session cookies are not bundled into either client. Owner-history collection uses the coding site's session inside the user's browser rather than uploading that session to Profligator.
+
+For the difference between inbox verification, linked-profile ownership and browser authorization, see [account and ownership flows](docs/account-security.md). Review [publication privacy checks](docs/publication-privacy.md) before sharing logs or committing configuration.
 
 ## Browser extension
 
@@ -141,6 +145,8 @@ uv run --project apps/api --dev python scripts/verify_editable_profile.py
 ```
 
 The browser runners use an isolated database and controlled data. Logs and screenshots go under ignored `artifacts/`. Dedicated PostgreSQL/RQ and container checks are described in the [deployment guide](docs/deployment.md).
+
+See the [verification guide](docs/testing.md) for each runner's prerequisites, side effects and evidence limits. A passing fixture test does not establish real provider access, email delivery or current hosted-service health.
 
 The 27 October profile release passed **211 API tests**, the web build, frontend browser acceptance and live HTTPS profile-editing checks at desktop/tablet/phone widths. Its PostgreSQL migration was rehearsed on a private database copy before deployment. These results do not establish representative model accuracy or complete access to every provider's history.
 
