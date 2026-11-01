@@ -1,5 +1,7 @@
 # Password recovery
 
+Reviewed against source on **15 November 2026**. The configuration below is generic; dated delivery observations near the end are historical, not a current sender-health check. Account-inbox and provider-profile proofs are explained separately in [account security](account-security.md).
+
 The existing login **Forgot password?** link now opens `/forgot-password`. Request a link using the account email, open the message, enter and confirm a new password, then sign in normally. The forms reuse the original login palette and assets.
 
 ## Gmail configuration
@@ -18,7 +20,7 @@ PROFLIGATOR_SMTP_PASSWORD=your-google-app-password
 PROFLIGATOR_SMTP_FROM_EMAIL=support@example.com
 ```
 
-The sender and SMTP username should be the same Gmail address. Keep credentials in the backend environment. The Gmail fields have been prepared locally, with delivery disabled until credentials are supplied. Restart the API after changing its environment. For containers, use the same settings in `infra/.env.production`; Compose passes them to the backend. Keep the public web URL on HTTPS in production.
+The sender and SMTP username should be the same Gmail address. Keep credentials in the backend environment. Both mail backends default to disabled. Enable the requested backend only after configuring its private sender credentials. Restart the API after changing its environment. For containers, use the same settings in `infra/.env.production`; Compose passes them to the backend. Keep the public web URL on HTTPS in production.
 
 Run database migrations before starting an existing deployment:
 
@@ -45,14 +47,14 @@ apps/api/.venv/bin/python -m pytest -q apps/api/tests/test_password_recovery.py
 apps/api/.venv/bin/python scripts/verify_password_recovery.py --output-dir artifacts/recovery
 ```
 
-The browser runner creates isolated API/web servers and a loopback SMTP server. It exercises the real request/reset screens, receives actual SMTP messages, verifies password confirmation, old/new password behavior, one-use links, change notifications, and mobile layout. It sends no external email and never touches real accounts. CI includes this runner.
+The browser runner creates isolated API/web servers and a loopback SMTP server. It exercises the real request/reset screens, receives actual SMTP messages, verifies password confirmation, old/new password behavior, one-use links, change notifications, and mobile layout. It sends no external email and never touches real accounts. The workflow definition includes this runner; repository Actions is currently disabled. It can be executed locally without enabling Actions.
 
-The backend suite passed 184 tests, with an additional empty-SMTP-configuration regression passing afterward (185 covered tests in total). The browser/SMTP acceptance also passed on 7 October. Gmail authentication and live delivery are still pending the sender's app password.
+The 7 October implementation passed 184 backend tests, followed by an additional empty-SMTP regression (185 covered tests at that point). Loopback browser/SMTP acceptance also passed then. Later sender checks are recorded below; these counts describe earlier revisions rather than the current suite. Use [testing](testing.md) for the latest rerun and its limits.
 
 ## Live reset-mail check — 13 October 2026
 
-The reset sender configured reset address is stored in the ignored backend `.env`, with owner-only permissions. Gmail authentication passed over verified STARTTLS. The actual forgot-password route returned HTTP 202 for the authorized existing account, and Gmail accepted its reset message. Mailbox receipt and completion of the reset have not been confirmed; the test did not change the account password. The emailed link points to `http://localhost:5173` and expires after 15 minutes. The local API health endpoint and forgot-password page returned HTTP 200.
+At that check, the configured reset address and credentials were stored in an ignored backend environment file with owner-only permissions. Gmail authentication passed over verified STARTTLS. The actual forgot-password route returned HTTP 202 for the authorized existing account, and Gmail accepted its reset message. Mailbox receipt and completion of the reset have not been confirmed; the test did not change the account password. The emailed link points to `http://localhost:5173` and expires after 15 minutes. The local API health endpoint and forgot-password page returned HTTP 200.
 
 The existing SQLite database was backed up before applying the pending migrations through `20261013_0012`. Delivery evidence is retained privately; no actual sender identity is included in the public repository.
 
-The separate verification sender remains disabled while the user resolves Google's identity-verification block for that account. Google's [sensitive-action guidance](https://support.google.com/accounts/answer/7162782) describes verification methods and possible seven-day restrictions; the screenshot alone does not establish the specific cause.
+During that earlier local setup the independent verification sender was not ready. Subsequent hosted configuration authenticated separate recovery and verification senders; that historical authentication check did not establish inbox receipt or completion of every recovery/verification journey. Sender state must be checked privately on the target environment. No real email was sent during the November documentation review.

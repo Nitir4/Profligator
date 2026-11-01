@@ -1,6 +1,6 @@
 # Backend implementation from the Group 5 report
 
-The source is [`Group - 5 .docx`](../Group%20-%205%20.docx). Its software requirements and Figures 11.2, 11.3, 11.4, and 11.11 define the backend behavior. The report introduces CodeFusion and later names the implemented product Profligator. The existing application name is retained.
+The source is the privately retained Group 5 project report; the document itself is not published in this repository. Its software requirements and Figures 11.2, 11.3, 11.4, and 11.11 define the backend behavior. The report introduces CodeFusion and later names the implemented product Profligator. The existing application name is retained.
 
 ## What the diagrams specify
 
@@ -152,3 +152,34 @@ npm run build
 Tests cover consent and link revocation, roles and history isolation, exact/semantic decisions, confidence rejection, provider errors, decision caching, unsafe URLs, periodic sync, connector schemas, contest parsing, evaluation metrics, and migration upgrade/downgrade preservation.
 
 Remaining external acceptance work: validate deployed collector operation and broader history/statement coverage; evaluate real LLM models against an agreed dataset and latency/cost targets; test PostgreSQL and Redis/RQ in a deployed environment; finish normal live-platform and cross-browser extension acceptance. The [installed extension](browser-extension.md) was added on 3 October with scoped, revocable device sessions and migration `20261003_0009`; Chromium controlled-page acceptance and Firefox connection/popup acceptance pass.
+
+
+## Later account, verification and activity behavior
+
+Reviewed against the source on **15 November 2026**. The original report mapping above remains useful, but migration `20261001_0004` is not the current head. Later migrations add OAuth identities, metadata/calendar/source-time persistence, scoped extension sessions, recovery, verification, provider pacing and editable account profiles. Current head is `20261027_0013`. Fresh migration-managed databases should run `upgrade head`; do not stamp arbitrary existing schemas.
+
+The account's immutable `users.id` owns history and sessions. `users.handle` is the case-insensitive unique Profligator username; `display_name`, `bio` and `avatar_revision` describe account presentation. Separate `user_avatars` storage holds processed JPEG bytes, keeping image payloads out of ordinary user queries while including them in database backups. See [account profile](account-profile.md).
+
+Inbox proof records the registered email in `verified_emails`. `verification_tokens` stores hashed, expiring, purpose-bound challenges for inbox and provider-profile proof. Provider-profile control is established by reading a one-use challenge from the linked profile's public name, not by a successful import or matching account emails. See [account security](account-security.md).
+
+### Additional API families
+
+All paths use `/api/v1`. These complement the report-facing API table rather than replacing its record/matching contracts.
+
+| Area | Paths and behavior |
+| --- | --- |
+| Account presentation | `PUT /account/profile`; owner-only text update with a database uniqueness constraint |
+| Account photo | `PUT`, `GET`, `DELETE /account/avatar`; validated upload, authenticated read and removal |
+| Inbox proof | `GET /auth/verification`, `POST /auth/verification/request`, `POST /auth/verification/confirm` |
+| Linked-profile proof | `POST /platform-profiles/{id}/ownership/challenge` and `/ownership/confirm` |
+| Recovery | `POST /auth/forgot-password`, `POST /auth/reset-password`; one-use tokens and session invalidation |
+| Scoped browser access | `/extension/sessions`, `/extension/session`, `/extension/history`; device grants are narrower than web sessions |
+| Shared photo | `GET /public-profiles/{token}/avatar`; current sharing consent checked before serving bytes |
+
+### Activity and coverage
+
+Public calendar counts are not unique solved-question totals. For an account/year with a saved submission calendar, aggregation uses that calendar instead of adding its dated-record fallback again. Available UTC timestamps and unzoned provider date strings remain separate in storage.
+
+The heatmap's **All activity** option can display both UTC activity and provider-local solves using each source's reported calendar day. **UTC activity** and individual source views remain available. An unspecified source timezone is never guessed or converted to UTC, and a display streak across reported dates is not a globally normalized chronology. Missing dates remain unknown. The solved-question table defaults to ten rows per page.
+
+Claims and provider request windows prevent duplicate dispatch/pacing races in supported code paths. One scheduler remains the supported baseline; these mechanisms do not establish multi-scheduler or representative-load acceptance. See [collection flow](profile-collection-structure.md) and [remaining work](remaining-work.md).

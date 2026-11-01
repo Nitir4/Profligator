@@ -7,8 +7,8 @@ The backend provides:
 - public LeetCode and GeeksforGeeks collectors with explicit coverage and optional offline fixtures;
 - a live Codeforces connector using the official public API;
 - SQLAlchemy persistence, versioned Alembic migrations, and dashboard aggregation;
-- PostgreSQL and Redis infrastructure through `infra/compose.yaml`.
-- candidate registration/sign-in with Argon2 password hashes, signed access tokens, and rotating refresh sessions.
+- PostgreSQL and Redis infrastructure through `infra/compose.yaml`;
+- candidate registration/sign-in with Argon2 password hashes, signed access tokens, and rotating refresh sessions;
 - candidate/recruiter authorization and revocable, consented public profile sharing;
 - source records, unique problem clusters, exact statement matching, and configurable Ollama/Groq semantic matchers;
 - an authenticated browser-extension duplicate-check endpoint with source/submission links;
@@ -55,7 +55,7 @@ npm run api:worker
 
 `POST /api/v1/syncs` returns `202 Accepted`. In RQ mode it initially returns a `pending` run; clients poll `GET /api/v1/syncs/{id}` until the run succeeds or fails. Worker jobs apply bounded exponential-backoff retries for transient provider failures.
 
-Run a single sync worker for the current MVP. Codeforces request spacing is enforced inside each connector job; a distributed rate limiter is required before horizontally scaling workers.
+The supported hosted baseline is one worker and one scheduler. Sync claims and database-backed provider pacing coordinate requests; representative-load acceptance and multiple-scheduler coordination remain separate work.
 
 ## Authentication
 
@@ -67,11 +67,11 @@ Before any non-development deployment, set a random `PROFLIGATOR_AUTH_SECRET_KEY
 
 ## Dashboard analytics
 
-`GET /api/v1/dashboard` derives all visible dashboard datasets from the authenticated candidate's active, solved problem records:
+`GET /api/v1/dashboard` derives dashboard data from the authenticated candidate's active profiles, saved calendars and solved problem records:
 
 - daily activity counts and current/longest streaks;
 - up to six provider-supplied topic assignments;
-- normalized Easy/Medium/Hard difficulty counts;
+- normalized Fundamentals/Easy/Medium/Hard difficulty counts;
 - latest successful-sync freshness;
 - explicit `empty`, `partial`, or `ready` data state with missing-metadata reasons.
 
@@ -91,3 +91,10 @@ For hosted comparisons, use `PROFLIGATOR_MATCHING_BACKEND=groq`, `PROFLIGATOR_MA
 Account settings supports display name, a case-insensitive unique username, a short bio, and photo upload/removal. `account_profile.py` validates owner-only updates and normalizes bounded JPEG/PNG/WebP uploads to metadata-stripped 384px JPEGs. Migration `20261027_0013` adds the account fields, unique username index and separate `user_avatars` storage. Existing immutable account IDs, email/Google connections, refresh/extension sessions, linked platform handles, history and share tokens are retained.
 
 Owner photo reads require an account session; shared photo reads require an active share token and stop working when sharing is revoked or the photo is removed. See [profile fields, endpoints and checks](../../docs/account-profile.md). Persistent web login uses rotating refresh sessions (30 days by default). Separate account verification/profile proof and recovery endpoints use independently configured verification/recovery SMTP senders; private passwords stay in environment files.
+
+
+## Verification and current reference
+
+The source review on 15 November 2026 leaves migration `20261027_0013` as the latest schema revision. Inbox proof and linked-profile proof are distinct: [account security](../../docs/account-security.md) explains the public-name challenge and independent SMTP senders. [Testing](../../docs/testing.md) separates deterministic API coverage from browser, PostgreSQL/RQ and live-provider acceptance. [Remaining work](../../docs/remaining-work.md) is the active checklist; earlier dated audits are historical measurements.
+
+Public API examples use synthetic identities and reserved domains. Private runtime configuration and operator evidence must not enter source, logs attached to public issues or documentation commits. Run `python3 scripts/check_public_privacy.py --history` before publishing.
