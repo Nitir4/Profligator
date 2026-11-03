@@ -1,10 +1,12 @@
 # Project scope and completion review
 
-Reviewed on **3 October 2026** against [Group - 5 .docx](../Group%20-%205%20.docx), its SRS Sections 2–9, design diagrams, current source code, local configuration, and verification results.
+**Historical design review:** the percentages, gaps and test counts below describe the revisions explicitly dated in this file. For the source review of 15 November 2026, use [remaining work](remaining-work.md) and [testing](testing.md). Hosting, recovery/ownership proof, persistent login and profile editing were subsequently implemented; older pending statements here are not the current checklist.
+
+Reviewed on **3 October 2026** against the privately retained Group 5 report, its SRS Sections 2–9, design diagrams, current source code, local configuration, and verification results.
 
 This is the audit snapshot **before** the extension implementation later that day. For the subsequent installed extension, connection/migration work and browser checks, see [browser extension](browser-extension.md) and the updated [remaining work](remaining-work.md). The estimate below describes that earlier snapshot.
 
-Later on 3 October, the installed extension, public statement recovery for all three supported providers, resumable owner LeetCode dates, recruiter guards/navigation and frontend coverage/revocation checks were implemented. The current suite passes 123 backend tests, extension tests, web build and controlled Chromium/frontend acceptance. The historical gaps and percentage below are not the current implementation estimate; consult [remaining work](remaining-work.md) for the active checklist. Real-account acceptance, semantic-model evaluation and deployed operation are still pending.
+Later on 3 October, the installed extension, public statement recovery for all three supported providers, resumable owner LeetCode dates, recruiter guards/navigation and frontend coverage/revocation checks were implemented. That later 3 October revision passed 123 backend tests, extension tests, web build and controlled Chromium/frontend acceptance. The historical gaps and percentage below are not the current implementation estimate; consult [remaining work](remaining-work.md) for the active checklist. At that revision, real-account acceptance, semantic-model evaluation and deployed operation were still pending; use the active checklist for subsequent work.
 
 ## Overall assessment
 
