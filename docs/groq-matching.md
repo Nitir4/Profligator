@@ -17,9 +17,9 @@ PROFLIGATOR_GROQ_MAX_INPUT_CHARS=16000
 
 The key is a masked `SecretStr`, used only in server-side authorization headers. The backend loads `.env`, not `.env.local`. Restart the API, scheduler and any worker after changing configuration. The web app and extension use the existing API response format and need no Groq credentials or rebuild. No new package dependency or database migration is needed.
 
-Groq lists this model among its production models and supports strict JSON schema responses for it. The adapter uses `https://api.groq.com/openai/v1/chat/completions`, temperature zero, low reasoning effort for GPT-OSS, bounded output and the existing `duplicate`, `confidence`, `reason` schema. Schema validation does not establish semantic accuracy. [Groq models](https://console.groq.com/docs/models), [structured outputs](https://console.groq.com/docs/structured-outputs).
+The recorded October check used this model with strict JSON-schema responses. Provider availability and supported settings must be rechecked before another live evaluation. The adapter uses `https://api.groq.com/openai/v1/chat/completions`, temperature zero, low reasoning effort for GPT-OSS, bounded output and the existing `duplicate`, `confidence`, `reason` schema. Schema validation does not establish semantic accuracy. [Groq models](https://console.groq.com/docs/models), [structured outputs](https://console.groq.com/docs/structured-outputs).
 
-The repository example still defaults to `disabled`. `ollama` remains available for local models. The configured local development environment now selects `groq` with `openai/gpt-oss-120b`; the model falls back to that ID only when Groq is selected and no model ID is configured.
+The repository example still defaults to `disabled`. `ollama` remains available for local models. At the October configuration check, the local environment selected `groq` with `openai/gpt-oss-120b`; the model falls back to that ID only when Groq is selected and no model ID is configured.
 
 ## Requests, caching and failures
 
@@ -49,9 +49,9 @@ Groq still receives the selected pair's titles, public statements and original t
 
 Retrieval verification passed **165 backend tests**, including zero provider calls for incompatible buckets, exact-match bypass, DP aliases/subtypes, multi-label matching, bounded unknown fallback, distinct-cluster limits and a shortlist of eight from a synthetic history of 1,000 unrelated graph questions plus 20 DP candidates. These checks verify filtering and call boundaries, not real-world retrieval recall.
 
-The subsequent [local classification audit](classification-audit.md) found and fixed contextual false labels, missing subtype aliases and keyword starvation. It added palindrome-subsequence, decoding, minimum-jump and minimum-path-sum hints and permits subset-sum/0/1-feasibility candidates. The suite now passes **174 tests**. On manually authored development diagnostics, 56/60 full label sets match and 16/17 equivalent pairs are retrieved; those results are not representative production accuracy. An untagged edit-distance paraphrase still misses the shortlist.
+The subsequent [local classification audit](classification-audit.md) found and fixed contextual false labels, missing subtype aliases and keyword starvation. It added palindrome-subsequence, decoding, minimum-jump and minimum-path-sum hints and permits subset-sum/0/1-feasibility candidates. That October revision passed **174 tests**. On manually authored development diagnostics, 56/60 full label sets match and 16/17 equivalent pairs are retrieved; those results are not representative production accuracy. An untagged edit-distance paraphrase still misses the shortlist.
 
-The later [live duplicate audit](duplicate-audit.md) passed 18/18 synthetic pairs through direct comparison, the extension API and saved-history clustering after normalizing edit-operation vocabulary. It detected all nine equivalents and rejected all nine near misses. The suite now passes **175 tests**; the sparse mixed-history retrieval miss above remains, and real-world accuracy is still unvalidated.
+The later [live duplicate audit](duplicate-audit.md) passed 18/18 synthetic pairs through direct comparison, the extension API and saved-history clustering after normalizing edit-operation vocabulary. It detected all nine equivalents and rejected all nine near misses. That October suite passed **175 tests**; the sparse mixed-history retrieval miss above remains, and real-world accuracy is still unvalidated.
 
 ## Reproduce verification
 

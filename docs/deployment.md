@@ -1,5 +1,7 @@
 # Deployment and acceptance
 
+Source/configuration review: **15 November 2026**. This public guide provides generic container prerequisites and dated acceptance context. Private operator runbooks, actual origins, credentials, host access and incident records are excluded from Git. This review did not connect to or redeploy the hosted environment.
+
 The full container setup contains PostgreSQL 16, Redis 7, a migration task, API, one RQ worker, one scheduler, and the built web application served by Nginx. The API and web containers run as non-root users. Source `.env` files, databases and development dependencies are excluded from runtime images.
 
 The web container proxies `/api/` to the API and serves SPA routes. Only its HTTP port is published, on host loopback; PostgreSQL, Redis and the API remain on the internal Docker network. Put an HTTPS reverse proxy in front of that port for a public deployment.
@@ -34,13 +36,13 @@ The HTTP runner creates a synthetic staging account, imports fixture history thr
 
 ## Repeat browser and infrastructure checks
 
-Install locked development dependencies with `uv sync --project apps/api --frozen --dev`, npm dependencies with `npm ci`, then browser dependencies with `apps/api/.venv/bin/python -m playwright install --with-deps chromium` on supported CI hosts. Locally an installed Chromium executable also works.
+Install locked development dependencies with `uv sync --project apps/api --frozen --dev`, npm dependencies with `npm ci`, then browser dependencies with `apps/api/.venv/bin/python -m playwright install --with-deps chromium` on supported CI hosts. The current frontend/profile runners require a `chromium` executable on PATH, even if Playwright has downloaded its own browser.
 
 ```sh
 npm run browser:test -- --output-dir artifacts/browser
 ```
 
-This starts isolated web/API servers and exercises real UI registration, profile validation/linking, fixture sync, dashboard/search, sharing/public view/revocation and logout/login. It also covers recruiter guards, mobile layout and stale shared-profile clearing. Traces, logs and screenshots are saved per run. No Google or provider browser sessions are used. The runner follows [Playwright's CI guidance](https://playwright.dev/python/docs/ci).
+This starts isolated web/API servers and exercises real UI registration, profile validation/linking, fixture sync, dashboard/search, sharing/public view/revocation and logout/login. It also covers recruiter guards, mobile layout and stale shared-profile clearing. Traces, logs and screenshots are saved per run. No Google or provider browser sessions are used. The current browser runner selects a system `chromium` executable; installing Playwright browser downloads alone is not sufficient for that lookup. See [testing prerequisites](testing.md#browser-acceptance).
 
 For PostgreSQL/RQ acceptance, provision an **empty dedicated test database** whose name starts with `profligator_acceptance`. Set `PROFLIGATOR_TEST_DATABASE_URL` and `PROFLIGATOR_TEST_REDIS_URL`, then run:
 
@@ -52,7 +54,7 @@ The runner preserves legacy seeded data through migrations, checks schema column
 
 ## CI and remaining release gates
 
-[The GitHub workflow](../.github/workflows/ci.yml) runs API tests, extension tests/build, web type checking/build, frontend browser acceptance, PostgreSQL/Redis/RQ acceptance and complete-container HTTP acceptance with retained artifacts. It needs no Google/Groq secrets and does not scrape live providers. Repository Actions are disabled by the owner. Publishing the workflow definition does not authorize running it; keep Actions disabled and obtain explicit approval before any execution. Use the local commands above for verification.
+[The GitHub workflow definition](../.github/workflows/ci.yml) contains jobs for API tests, extension tests/build, web type checking/build, frontend browser acceptance, PostgreSQL/Redis/RQ acceptance and complete-container HTTP acceptance with retained artifacts. It needs no Google/Groq secrets and does not scrape live providers. Repository Actions are disabled by the owner. Publishing the workflow definition does not authorize running it; keep Actions disabled and obtain explicit approval before any execution. Use the local commands above for verification.
 
 The app is hosted on the deployment VM with HTTPS, boot startup and daily backups; see the dated deployment notes below. Real signed-in extension history, representative model/retrieval evaluation, provider failure acceptance and operational monitoring remain separate checks. Sync locks, refresh safeguards and cross-process request pacing are implemented; representative-load acceptance remains outstanding.
 
@@ -75,3 +77,12 @@ The production Google callback was subsequently configured by the user; the appl
 Migration `20261027_0013` adds editable account identity and database-backed profile photos. The upgrade/downgrade/re-upgrade was rehearsed on a private PostgreSQL copy with existing row values preserved before applying the additive live migration. API, web, worker and scheduler were recreated with the existing private environment, and live HTTPS browser acceptance passed. Profile photos are included in ordinary database backups. See [profile editing and access rules](account-profile.md).
 
 The full API suite passed 211 tests for this release. Frontend acceptance also covers 30-day persistent refresh sessions across a browser restart, shared account-menu navigation, 10-row question pagination, responsive onboarding/settings and source-local activity separated from UTC. No GitHub Actions were executed.
+
+
+## Reading deployment evidence
+
+A container health response with `database: "ok"` checks API/database access; it does not verify SMTP delivery, provider access, queue completion or scheduler progress. The web health route proxies the API, so worker/scheduler monitoring needs separate signals. The source defines restart policies but does not supply a complete alerting system.
+
+Compose migration ordering is important for a fresh stack; upgrades of a populated environment also need a privately reviewed backup/rehearsal/rollback plan. An application image rollback and a database restore are different operations. The latter can discard newer writes. Never use `down --volumes` for a normal restart.
+
+This November documentation publication does not provision infrastructure, execute a hosted migration, dispatch GitHub workflows or establish current production health. See [testing](testing.md) for actual reruns and [remaining work](remaining-work.md) for operational acceptance still needed.
