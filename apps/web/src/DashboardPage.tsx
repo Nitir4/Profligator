@@ -178,17 +178,40 @@ function DashboardPage() {
 
   useEffect(() => {
     let active = true;
-    getCurrentUser()
-      .then((currentUser) => {
-        if (!active) return null;
-        setUser(currentUser);
-        return getDashboard();
-      })
-      .then((data) => {
-        if (data === null) return;
-        if (!active) return;
+    let authenticated = false;
+    let dashboardRequest = 0;
+    const loadDashboard = async () => {
+      const request = ++dashboardRequest;
+      try {
+        const data = await getDashboard();
+        if (!active || request !== dashboardRequest) return;
         setDashboard(data);
+        setRevision((value) => value + 1);
         setError(null);
+        return true;
+      } catch (failure) {
+        if (!active || request !== dashboardRequest) return;
+        const requestError = failure as ApiError;
+        if (requestError.status === 401) window.location.assign("/login");
+        else setError(requestError.message);
+        return false;
+      }
+    };
+    // Extension imports update the API independently of this page. Reload saved
+    // history when returning to the tab and while it remains visible.
+    const refreshSavedHistory = () => {
+      if (active && authenticated && !document.hidden) void loadDashboard();
+    };
+    window.addEventListener("focus", refreshSavedHistory);
+    document.addEventListener("visibilitychange", refreshSavedHistory);
+    const refreshTimer = window.setInterval(refreshSavedHistory, 30000);
+    getCurrentUser()
+      .then(async (currentUser) => {
+        if (!active) return;
+        setUser(currentUser);
+        authenticated = true;
+        const loaded = await loadDashboard();
+        if (!active || !loaded) return;
         // Show saved data immediately, then refresh the owner's accounts.
         // The API reuses current jobs and enforces the per-profile cooldown.
         void listPlatformProfiles().then(async (profiles) => {
@@ -205,16 +228,15 @@ function DashboardPage() {
             }
           }
           if (!active) return;
-          const latest = await getDashboard();
+          await loadDashboard();
           if (!active) return;
-          setDashboard(latest);
-          setRevision((value) => value + 1);
           setSyncMessage(results.every(Boolean) ? "Profile check complete. Recently synced profiles use saved data." : "Some profiles could not refresh. Showing their last saved data.");
         }).catch(() => {
           if (active) setSyncMessage("Could not check for updates. Showing saved profile data.");
         });
       })
       .catch((requestError: ApiError) => {
+        if (!active) return;
         if (requestError.status === 401) {
           window.location.assign("/login");
           return;
@@ -224,6 +246,9 @@ function DashboardPage() {
       .finally(() => active && setLoading(false));
     return () => {
       active = false;
+      window.clearInterval(refreshTimer);
+      window.removeEventListener("focus", refreshSavedHistory);
+      document.removeEventListener("visibilitychange", refreshSavedHistory);
     };
   }, []);
 
@@ -242,6 +267,10 @@ function DashboardPage() {
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1500);
   }
+
+  const hasPartialHistory = dashboard?.platforms.some((profile) => profile.history_complete === false);
+  const historyReconciled = !!dashboard?.platforms.length
+    && dashboard.platforms.every((profile) => profile.history_complete === true);
 
   return (
     <div className="dashboard-page" data-node-id="2603:1500">
@@ -303,8 +332,10 @@ function DashboardPage() {
           )}
           {dashboard?.data_state === "partial" && (
             <div className="dashboard-data-notice" role="status">
-              <strong>Some analytics are incomplete.</strong>
-              <span>See the status and next steps for each connected platform below.</span>
+              <strong>{hasPartialHistory ? "Some solved history is missing." : "Some analytics details are unavailable."}</strong>
+              <span>{historyReconciled
+                ? "Imported solve counts match the platform totals. Some dates, topics or other details are still unavailable."
+                : "See the status and next steps for each connected platform below."}</span>
               <a href="#coverage-title">View affected profiles</a>
             </div>
           )}

@@ -1,4 +1,11 @@
+from datetime import UTC, datetime, timedelta
+
 import httpx
+from sqlalchemy import select
+
+from profligator_api.main import create_app
+from profligator_api.models import PlatformProfile, RefreshSession, User
+from profligator_api.security import ACCESS_COOKIE
 
 
 async def test_authentication_lifecycle_and_protected_routes(
@@ -69,6 +76,42 @@ async def test_candidate_data_is_isolated(client: httpx.AsyncClient) -> None:
         json={"platform_profile_id": first_profile.json()["id"]},
     )
     assert inaccessible.status_code == 404
+
+
+async def test_expired_session_and_api_restart_preserve_account_setup_and_history(client):
+    original_user = (await client.get("/api/v1/auth/me")).json()
+    linked = await client.post("/api/v1/platform-profiles", json={
+        "platform": "leetcode", "handle_or_url": "returning_candidate",
+    })
+    profile = linked.json()
+    synced = await client.post("/api/v1/syncs", json={"platform_profile_id": profile["id"]})
+    assert synced.json()["status"] == "succeeded"
+    shared = (await client.put("/api/v1/sharing", json={"enabled": True})).json()
+
+    app = client._transport.app
+    with app.state.database.session() as session:
+        old = datetime.now(UTC) - timedelta(days=90)
+        session.get(User, original_user["id"]).created_at = old
+        session.get(PlatformProfile, profile["id"]).created_at = old
+        for refresh in session.scalars(select(RefreshSession).where(RefreshSession.user_id == original_user["id"])):
+            refresh.created_at = old
+            refresh.expires_at = old + timedelta(days=30)
+    client.cookies.delete(ACCESS_COOKIE)
+    assert (await client.post("/api/v1/auth/refresh")).status_code == 401
+    assert (await client.get("/api/v1/dashboard")).status_code == 401
+
+    # Reopen the same persisted database with a fresh application process.
+    restarted = create_app(app.state.settings)
+    async with restarted.router.lifespan_context(restarted):
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=restarted), base_url="http://testserver") as returning:
+            logged_in = await returning.post("/api/v1/auth/login", json={
+                "email": "alex@example.com", "password": "correct-horse-battery-staple",
+            })
+            assert logged_in.status_code == 200
+            assert logged_in.json()["user"]["id"] == original_user["id"]
+            assert [item["id"] for item in (await returning.get("/api/v1/platform-profiles")).json()] == [profile["id"]]
+            assert (await returning.get("/api/v1/dashboard")).json()["total_problems_solved"] == 3
+            assert (await returning.get("/api/v1/sharing")).json() == shared
 
 
 async def test_health_and_connector_modes(client: httpx.AsyncClient) -> None:

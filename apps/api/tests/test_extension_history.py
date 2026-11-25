@@ -37,6 +37,12 @@ async def test_browser_history_names_dates_idempotence_and_sharing(client):
     assert result.json()["questions"] == 2
     assert result.json()["timestamped_questions"] == 1
     assert result.json()["history_complete"] is True
+    dashboard = (await client.get("/api/v1/dashboard")).json()
+    assert dashboard["platforms"][0]["history_complete"] is True
+    assert "One or more providers expose only partial history." not in dashboard["partial_reasons"]
+    # A full list of solved questions does not promise every date/topic is known.
+    assert dashboard["data_state"] == "partial"
+    assert "Some records do not include activity timestamps." in dashboard["partial_reasons"]
     assert (await client.post("/api/v1/extension/history/browser", headers=headers, json=browser_payload(profile))).json()["records_written"] == 0
     later = browser_payload(profile)
     later["questions"][0]["solved_at"] = "2026-01-01T08:00:00Z"

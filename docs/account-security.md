@@ -8,6 +8,8 @@ Password sign-in uses the account's registered email and Argon2 password hash. G
 
 The API issues a short-lived access cookie and a rotating refresh cookie. Defaults are 15 minutes and 30 days respectively. The browser can renew access during that refresh lifetime, including after a browser restart. Logout revokes the refresh session; clearing cookies, expiration, invalidation or a password reset can require signing in again. This is persistent access with an expiry, not an indefinite login promise.
 
+Session expiry does not delete the account, linked profiles or imported history. Returning password users open their dashboard after signing in; new registrations open profile setup. Google sign-in restores the account bound to that Google identity. Choosing a different, previously unused Google account creates a separate Profligator account with its own setup, even if the same coding handles are later linked. If a returning account looks empty, check the signed-in account email and Google account selection first.
+
 Display name, username, bio and photo changes retain the immutable account ID. They do not rename coding-platform accounts, alter the registered email or disconnect Google. See [profile editing](account-profile.md).
 
 ## Verify the account inbox

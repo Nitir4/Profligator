@@ -33,7 +33,9 @@ uv run --project apps/api --dev python scripts/verify_editable_profile.py --outp
 uv run --project apps/api --dev python scripts/verify_password_recovery.py --output-dir artifacts/recovery
 ```
 
-The frontend runner starts temporary web/API processes and isolated fixture data. It checks registration, profile linking/sync, search/pagination, sharing/revocation, role guards, layout and persistent refresh after a browser restart. The profile runner checks editable identity/photo persistence, access boundaries, removal, long text and responsive layouts. The recovery runner uses a loopback SMTP server and disposable accounts; it does not send external mail.
+The frontend runner starts temporary web/API processes and isolated fixture data. It checks registration, profile linking/sync, search/pagination, sharing/revocation, role guards, layout and persistent refresh after a browser restart. Returning password sign-ins must open the dashboard with saved profiles/history. Extension-history API imports must update dashboard coverage on focus, visibility and visible polling without starting provider syncs; complete solved counts must be distinguished from missing dates or metadata. The profile runner checks editable identity/photo persistence, access boundaries, removal, long text and responsive layouts. The recovery runner uses a loopback SMTP server and disposable accounts; it does not send external mail.
+
+`test_api.py` also expires a 90-day-old account's session and reopens its database through a fresh app to verify that password sign-in restores the same account, profiles, history and sharing settings. `test_google_auth.py` checks that selecting another Google identity opens a separate account, while returning to the original identity restores its saved history. These tests use isolated databases and a simulated Google provider.
 
 The profile runner can also take `--base-url`, which creates test accounts on that target and records IDs for operator cleanup. That mode has write side effects and is not a read-only production smoke check. Use only a target authorized for acceptance and clean up only the recorded synthetic identities.
 

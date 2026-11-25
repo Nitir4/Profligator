@@ -66,6 +66,66 @@ async def check_profile_layout(page, output):
     await page.set_viewport_size({"width": 1280, "height": 900})
 
 
+async def check_extension_history_refresh(browser, origin):
+    context = await browser.new_context()
+    try:
+        registered = await context.request.post(origin + '/api/v1/auth/register', data={
+            'email': 'history-refresh@example.com', 'handle': 'history_refresh', 'password': 'FrontendTest2026!',
+        })
+        assert registered.status == 201
+        linked = await context.request.post(origin + '/api/v1/platform-profiles', data={
+            'platform': 'leetcode', 'handle_or_url': 'history_refresh',
+        })
+        assert linked.status == 201
+        profile = await linked.json()
+        synced = await context.request.post(origin + '/api/v1/syncs', data={'platform_profile_id': profile['id']})
+        assert (await synced.json())['status'] == 'succeeded'
+        grant = await context.request.post(origin + '/api/v1/extension/sessions', data={'label': 'History refresh check'}, headers={'Origin': origin})
+        assert grant.status == 201
+        headers = {'Authorization': 'Bearer ' + (await grant.json())['token']}
+
+        async def import_questions(total, questions):
+            imported = await context.request.post(origin + '/api/v1/extension/history/browser', headers=headers, data={
+                'profile_id': profile['id'], 'handle': profile['public_handle'],
+                'source_total_solved': total, 'questions': questions, 'final_batch': True,
+            })
+            assert imported.ok
+            return await imported.json()
+
+        partial = await import_questions(4, [])
+        assert partial['history_complete'] is False
+        page = await context.new_page()
+        await page.clock.install()
+        sync_requests = []
+        page.on('request', lambda request: sync_requests.append(request.url)
+                if request.method == 'POST' and request.url.endswith('/api/v1/syncs') else None)
+        await page.goto(origin + '/dashboard')
+        await page.get_by_text('Some solved history is missing.', exact=True).wait_for()
+        await page.get_by_text('Profile check complete.', exact=False).wait_for()
+        sync_count = len(sync_requests)
+        complete = await import_questions(4, [{'source_id': 'extension-imported', 'title': 'Extension Imported'}])
+        assert complete['history_complete'] is True
+        await page.evaluate("window.dispatchEvent(new Event('focus'))")
+        await page.get_by_text('Solved count reconciled', exact=True).wait_for()
+        await page.get_by_text('Imported solve counts match the platform totals.', exact=False).wait_for()
+        assert await page.get_by_text('Partial history', exact=True).count() == 0
+        # Missing dates/details still have their own accurate notice.
+        await page.get_by_text('Some analytics details are unavailable.', exact=True).wait_for()
+
+        await import_questions(5, [{'source_id': 'extension-polled', 'title': 'Extension Polled'}])
+        await page.clock.run_for(30000)
+        await page.get_by_text('5 imported', exact=True).wait_for()
+        assert len(sync_requests) == sync_count, 'Reading imported history must not start new provider syncs'
+
+        # Also refresh when a hidden tab becomes visible, without navigation.
+        await import_questions(6, [{'source_id': 'extension-visible', 'title': 'Extension Visible'}])
+        await page.evaluate("document.dispatchEvent(new Event('visibilitychange'))")
+        await page.get_by_text('6 imported', exact=True).wait_for()
+        assert len(sync_requests) == sync_count
+    finally:
+        await context.close()
+
+
 async def main(output_root=None):
     if output_root:
         output_root.mkdir(parents=True, exist_ok=True)
@@ -127,6 +187,7 @@ app = create_app(settings)
             candidate = await browser.new_context(viewport={"width": 1280, "height": 900})
             recruiter = await browser.new_context(viewport={"width": 1280, "height": 900})
             guest = await browser.new_context()
+            await check_extension_history_refresh(browser, origin)
             errors = []
             async def page_for(context):
                 page = await context.new_page()
@@ -210,9 +271,11 @@ app = create_app(settings)
                 await new_page.get_by_label("Email address").fill("onboarding@example.com")
                 await new_page.get_by_label("Password", exact=True).fill("FrontendTest2026!")
                 await new_page.get_by_role("button", name="Sign In", exact=True).click()
-                await new_page.wait_for_url("**/onboarding/profiles")
-                await new_page.get_by_label("LeetCode username", exact=True).wait_for()
-                assert await new_page.get_by_label("LeetCode username", exact=True).input_value() == "fixture_lc"
+                await new_page.wait_for_url("**/dashboard")
+                await new_page.get_by_role("heading", name="Solved questions", exact=True).wait_for()
+                returned_profiles = await (await onboarding.request.get(origin + "/api/v1/platform-profiles")).json()
+                assert {profile['public_handle'] for profile in returned_profiles} == {'fixture_lc', 'fixture_gfg'}
+                assert (await (await onboarding.request.get(origin + "/api/v1/dashboard")).json())["total_problems_solved"] == 5
                 same_user = await (await onboarding.request.get(origin + '/api/v1/auth/me')).json()
                 await new_page.get_by_role('link', name='Profligator home', exact=True).click()
                 await new_page.wait_for_url('**/dashboard')
@@ -242,7 +305,7 @@ app = create_app(settings)
                 await page.get_by_label("Email address").fill(f"frontend-{role}@example.com")
                 await page.get_by_label("Password", exact=True).fill("FrontendTest2026!")
                 await page.get_by_role("button", name="Sign In", exact=True).click()
-                await page.wait_for_url("**/team" if role == "recruiter" else "**/onboarding/profiles")
+                await page.wait_for_url("**/team" if role == "recruiter" else "**/dashboard")
             owner_page = await page_for(candidate)
             await login(owner_page, "candidate")
             await owner_page.goto(origin + "/team")
@@ -253,6 +316,8 @@ app = create_app(settings)
             await owner_page.goto(origin + "/dashboard")
             await owner_page.get_by_role("heading", name="Matching coverage").wait_for()
             await owner_page.get_by_text("1 of 2 imported questions have text", exact=False).wait_for()
+            await owner_page.get_by_text("Imported solve counts match the platform totals.", exact=False).wait_for()
+            assert await owner_page.get_by_text("Some solved history is missing.", exact=True).count() == 0
             await check_breakdown_layout(owner_page, output, "partial")
             assert await owner_page.get_by_label('Activity source', exact=True).input_value() == 'all'
             await owner_page.get_by_label('Activity period', exact=True).select_option('2025')
@@ -376,7 +441,8 @@ app = create_app(settings)
             "styled account/sharing settings desktop/mobile", "email control opens account menu on all tested signed-in pages", "default all activity includes GFG and sums shared dates", "UTC and source-local activity filters retain original counts", "solved pagination 10/10/3 with next/previous",
             "unsupported platforms cannot be selected", "navigation precedes profile synchronization", "invalid replacement preserves saved profiles and retry keeps canonical IDs", "onboarding logo opens dashboard and preserves authenticated user",
             "four-row difficulty geometry on empty/populated dashboards at four widths", "one/three/five account row geometry at four widths", "expandable coverage notes",
-            "solved-question search", "UI sharing and anonymous public view/revocation", "logout/login persists linked accounts",
+            "solved-question search", "UI sharing and anonymous public view/revocation", "logout/login opens dashboard with saved profiles/history",
+            "extension imports update dashboard on focus/visibility and visible polling without provider syncs", "complete solved counts retain only accurate metadata warnings",
             "candidate sharing text", "recruiter navigation and route guards",
             "same-site shared link validation", "statement/date/matching coverage", "public desktop/mobile rendering",
             "revoked shared table clears profile", "anonymous protected-route redirect"], "output": str(output)}

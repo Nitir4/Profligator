@@ -109,7 +109,8 @@ function App() {
       const session = authMode === "register"
         ? await registerCandidate(email, handle, password)
         : await loginCandidate(email, password);
-      const next = session.user.role === "recruiter" ? "/team" : "/onboarding/profiles";
+      const next = session.user.role === "recruiter" ? "/team"
+        : authMode === "register" ? "/onboarding/profiles" : "/dashboard";
       window.history.pushState({}, "", next);
       setPath(next);
     } catch (error) {

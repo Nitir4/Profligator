@@ -21,6 +21,8 @@ Codolio's [Profile Tracker guide](https://codolio.com/help-center/article/buildi
 
 Claims serialize through a transaction on the platform row, avoiding duplicate dispatches for overlapping requests. Successful and failed attempts observe the cooldown. Abandoned jobs can be marked failed and retried after their timeout. SQLite concurrent claims are tested. PostgreSQL/RQ integration and hosted advisory-lock/pacing checks were subsequently recorded in October; representative-load and real-provider failure acceptance remain outstanding. The existing separately operated scheduler remains available as a background fallback required by the report.
 
+The owner's dashboard reloads saved history when its tab gains focus or becomes visible, and every 30 seconds while visible. These reads update extension-import counts and coverage without starting another provider sync. A reconciled solved count means imported question identities match the platform's reported total; dates, topics, difficulty and statements may still be unavailable. The dashboard distinguishes missing solved history from incomplete analytics details.
+
 ## Endpoints
 
 | Endpoint | Purpose |

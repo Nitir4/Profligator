@@ -68,6 +68,35 @@ async def test_google_requires_configuration(client):
     assert (await client.get("/api/v1/auth/google/callback")).headers["location"].endswith("google_error=google_not_configured")
 
 
+async def test_returning_google_identity_restores_original_history_after_different_account_sign_in(client, signing_key):
+    tokens, _ = provider(client, signing_key)
+    await client.post("/api/v1/auth/logout")
+    _, query = await begin(client, signing_key, tokens)
+    await complete(client, query)
+    original = (await client.get("/api/v1/auth/me")).json()
+    linked = await client.post("/api/v1/platform-profiles", json={
+        "platform": "leetcode", "handle_or_url": "original_google_profile",
+    })
+    profile = linked.json()
+    assert (await client.post("/api/v1/syncs", json={"platform_profile_id": profile["id"]})).json()["status"] == "succeeded"
+
+    await client.post("/api/v1/auth/logout")
+    _, query = await begin(client, signing_key, tokens, email="another-google@example.com", subject="another-google-subject")
+    switched = await complete(client, query)
+    assert switched.headers["location"].endswith("/onboarding/profiles")
+    assert (await client.get("/api/v1/auth/me")).json()["id"] != original["id"]
+    assert (await client.get("/api/v1/platform-profiles")).json() == []
+    assert (await client.get("/api/v1/dashboard")).json()["total_problems_solved"] == 0
+
+    await client.post("/api/v1/auth/logout")
+    _, query = await begin(client, signing_key, tokens)
+    restored = await complete(client, query)
+    assert restored.headers["location"].endswith("/dashboard")
+    assert (await client.get("/api/v1/auth/me")).json()["id"] == original["id"]
+    assert [row["id"] for row in (await client.get("/api/v1/platform-profiles")).json()] == [profile["id"]]
+    assert (await client.get("/api/v1/dashboard")).json()["total_problems_solved"] == 3
+
+
 async def test_google_registration_pkce_cookies_and_stable_subject(client, signing_key):
     tokens, calls = provider(client, signing_key)
     await client.post("/api/v1/auth/logout")
